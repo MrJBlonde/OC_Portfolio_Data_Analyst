@@ -18,7 +18,7 @@
 
 Passionné par la donnée sous toutes ses formes, je construis des **pipelines ETL robustes**, des **analyses statistiques** et des **dashboards décisionnels** qui aident les équipes à prendre de meilleures décisions.
 
-Ce portfolio regroupe mes projets réalisés dans le cadre de la formation **Data Analyst Bac+4** chez OpenClassrooms. Chaque projet reproduit un contexte professionnel réel, du traitement de la donnée brute jusqu'à la restitution aux parties prenantes.
+Ce portfolio regroupe mes projets réalisés dans le cadre de la formation **Data Analyst Bac+4** chez GRETA sur concours région et Openclassroom. Chaque projet reproduit un contexte professionnel réel, du traitement de la donnée brute jusqu'à la restitution aux parties prenantes.
 
 > 💡 **Point clé recruteur** : Le projet P8 couvre un **pipeline ETL complet avec dbt + Snowflake**, conforme RGPD, enrichi de données INSEE — la stack data moderne en entreprise.
 
