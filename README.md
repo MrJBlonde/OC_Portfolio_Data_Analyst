@@ -9,7 +9,7 @@
 
 ---
 
-> **Data Analyst & Développeur IA** | Spécialiste Management SI & Pilotage de Performance  
+> **Data Analyst & Développeur IA**  
 > 📍 Orléans / Remote &nbsp;|&nbsp; 🎯 Recherche alternance 2026 (Data / IA / MSI)
 
 ---
