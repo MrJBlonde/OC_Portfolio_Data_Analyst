@@ -1,4 +1,8 @@
 [GAUTHIER_Julien_3_presentation_0220226.pdf](https://github.com/user-attachments/files/25854616/GAUTHIER_Julien_3_presentation_0220226.pdf)
+---[GAUTHIER_Julien_1_notebook_022026.ipynb](https://github.com/user-attachments/files/25854618/GAUTHIER_Julien_1_notebook_022026.ipynb) 
+et
+[README_P4.md](https://github.com/user-attachments/files/25854617/README_P4.md)
+
 # 🌍 P4 — Étude de Santé Publique : Sous-nutrition & Sécurité Alimentaire
 
 [![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
@@ -6,9 +10,6 @@
 [![Jupyter](https://img.shields.io/badge/Jupyter-F37626?style=flat-square&logo=jupyter&logoColor=white)](https://jupyter.org)
 [![Matplotlib](https://img.shields.io/badge/Matplotlib-11557c?style=flat-square)](https://matplotlib.org)
 [![Seaborn](https://img.shields.io/badge/Seaborn-4c9be8?style=flat-square)](https://seaborn.pydata.org)
-
----[GAUTHIER_Julien_1_notebook_022026.ipynb](https://github.com/user-attachments/files/25854618/GAUTHIER_Julien_1_notebook_022026.ipynb)
-[README_P4.md](https://github.com/user-attachments/files/25854617/README_P4.md)
 
 
 ## 🎯 Objectif
