@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sanitoral — PMO Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g1:#0B3D2E;--g2:#16A34A;--g3:#4ADE80;--gbg:#EDF2EE;
+  --red:#DC2626;--redbg:#FEF2F2;--redtxt:#B91C1C;
+  --ora:#EA580C;--orabg:#FFF7ED;--oratxt:#C2410C;
+  --yel:#D97706;--ylbg:#FFFBEB;
+  --blu:#1D4ED8;--blubg:#EFF6FF;--blutxt:#1E40AF;
+  --t1:#111827;--t2:#6B7280;--t3:#9CA3AF;
+  --card:#fff;--border:#E5EDE8;--bg:#EDF2EE;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);display:flex;flex-direction:column;font-size:13px}
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;min-height:0;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sb{width:190px;min-width:190px;background:var(--g1);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:18px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+.sb-logo{display:flex;align-items:center;gap:9px;margin-bottom:2px}
+.sb-icon{width:32px;height:32px;background:var(--g2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sb-brand{font-size:14px;font-weight:700;color:#fff;letter-spacing:.03em;line-height:1}
+.sb-brand span{color:var(--g3)}
+.sb-sub{font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.07em;margin-top:4px;padding-left:2px}
+.sb-nav{padding:10px 8px;flex:1;overflow:hidden}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);cursor:pointer;transition:all .15s;margin-bottom:2px;position:relative;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:#fff}
+.nav-item.on{background:rgba(74,222,128,0.13);color:#fff}
+.nav-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--g3);border-radius:0 3px 3px 0}
+.nav-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-filters{padding:12px 12px 16px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:rgba(0,0,0,0.15)}
+.sb-flbl{font-size:9px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:700}
+.sb-sel{width:100%;background:#1A5C44;border:1.5px solid rgba(74,222,128,0.35);color:#fff;font-size:12px;font-weight:500;padding:9px 11px;border-radius:8px;font-family:'DM Sans',sans-serif;margin-bottom:8px;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,background .15s}
+.sb-sel:hover{background:#1E6B50;border-color:rgba(74,222,128,0.65)}
+.sb-sel:focus{outline:none;border-color:var(--g3);background:#1E6B50}
+.sb-sel option{background:#0B3D2E;color:#fff;font-size:12px}
+.sb-alert{background:rgba(220,38,38,0.25);border:1.5px solid rgba(220,38,38,0.5);color:#FCA5A5;font-size:10px;font-weight:700;padding:8px 10px;border-radius:8px;margin-top:2px;line-height:1.4;text-align:center}
+
+/* ── MAIN ── */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.pages{flex:1;min-height:0;position:relative;overflow:hidden}
+.page{display:none;position:absolute;inset:0;overflow-y:auto;padding:14px;flex-direction:column;gap:10px}
+.page.show{display:flex}
+
+/* PAGE TABS */
+.ptabs{background:#f8f9fa;border-top:1px solid #e5e7eb;display:flex;height:30px;flex-shrink:0;padding:0 12px}
+.ptab{font-size:11px;padding:0 14px;height:100%;display:flex;align-items:center;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-weight:500;white-space:nowrap;user-select:none}
+.ptab.on{color:var(--g2);border-bottom-color:var(--g2);font-weight:600}
+.ptab:hover:not(.on){color:var(--t1)}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding:14px 18px;border-radius:12px;background:var(--card);border:1px solid var(--border);gap:12px}
+.tb-left{display:flex;align-items:center;gap:12px}
+.tb-icon{width:38px;height:38px;border-radius:10px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tb-title{font-size:17px;font-weight:700;line-height:1;color:var(--t1)}
+.tb-sub{font-size:11px;color:var(--t2);margin-top:4px}
+.tb-divider{display:none}
+.tb-stat{display:none}
+.tb-stat-val{display:none}
+.tb-stat-lbl{display:none}
+.chips{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.chip{font-size:9px;font-weight:500;padding:4px 11px;border-radius:20px}
+.chip-g{background:#DCFCE7;color:#166534}
+.chip-n{border:1px solid var(--border);color:var(--t2);background:var(--card)}
+
+/* ── FILTERBAR ── */
+.fbar{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:8px 13px;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex-shrink:0}
+.fbar-lbl{font-size:8px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
+.fgrp{display:flex;gap:3px;flex-shrink:0}
+.fbtn{font-size:10px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;border:1.5px solid var(--border);color:var(--t2);background:var(--card);transition:all .15s;white-space:nowrap;user-select:none}
+.fbtn.on{background:var(--g1);color:#fff;border-color:var(--g1)}
+.fbtn:hover:not(.on){border-color:var(--g2);color:var(--g2)}
+.fsep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;flex-shrink:0}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px 14px;position:relative;overflow:hidden;cursor:default;transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,0,0,0.07)}
+.kpi-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0}
+.kpi-ico{position:absolute;right:11px;top:11px;width:25px;height:25px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.kpi-val{font-size:22px;font-weight:700;line-height:1;margin:5px 0 3px;transition:color .3s}
+.kpi-lbl{font-size:9px;color:var(--t2);font-weight:500}
+.kpi-tag{display:inline-flex;align-items:center;font-size:8px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:5px}
+
+/* ── GRID ── */
+.g23{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:10px;flex:1;min-height:0}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;flex-shrink:0}
+.g2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:10px;flex:1;min-height:0}
+.vstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+.fill{flex:1;min-height:0;display:flex;flex-direction:column}
+
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px}
+.card-title{font-size:11px;font-weight:600;color:var(--t1)}
+.card-sub{font-size:9px;color:var(--t3);margin-top:2px}
+.tag{font-size:8px;font-weight:700;padding:2px 9px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+.tag-r{background:var(--redbg);color:var(--redtxt)}
+.tag-o{background:var(--orabg);color:var(--oratxt)}
+.tag-g{background:#DCFCE7;color:#166534}
+.tag-b{background:var(--blubg);color:var(--blutxt)}
+
+/* ── TABLE TOP 5 ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:6px 8px;text-align:left;font-size:8px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:#FAFBFA;white-space:nowrap}
+.tbl td{padding:6px 8px;border-bottom:1px solid #F3F7F4;vertical-align:middle;font-size:10px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:#F9FCF9}
+.rank{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.pill{font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.pill-r{background:var(--redbg);color:var(--redtxt)}
+.pill-o{background:var(--orabg);color:var(--oratxt)}
+.pill-g{background:#DCFCE7;color:#166534}
+.pill-b{background:var(--blubg);color:var(--blutxt)}
+
+/* ── HBARS ── */
+.hbars{display:flex;flex-direction:column;gap:5px}
+.hbr{display:flex;align-items:center;gap:6px}
+.hbl{font-size:9px;color:var(--t2);width:110px;flex-shrink:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbt{flex:1;height:16px;background:#F1F5F1;border-radius:3px;overflow:hidden;position:relative}
+.hbf{height:100%;border-radius:3px;display:flex;align-items:center;padding:0 6px;transition:width .4s ease}
+.hbf span{font-size:8px;font-weight:600;color:#fff;white-space:nowrap}
+.hbv{font-size:9px;font-weight:600;width:38px;text-align:right;flex-shrink:0}
+
+/* ── MAP ── */
+.map-box{border-radius:8px;overflow:hidden;position:relative;background:linear-gradient(155deg,#1C4A38 0%,#1A5C44 40%,#1E6B50 100%);flex:1}
+.map-leg{position:absolute;bottom:7px;left:9px;display:flex;gap:10px}
+.ml-i{display:flex;align-items:center;gap:4px;font-size:8px;color:#166534;font-weight:600}
+.ml-d{width:6px;height:6px;border-radius:50%}
+
+/* ── DONUT ── */
+.drow{display:flex;align-items:center;gap:13px}
+.dleg{display:flex;flex-direction:column;gap:5px;flex:1}
+.dl{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--t2)}
+.dd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dv{margin-left:auto;font-size:10px;font-weight:600;color:var(--t1)}
+
+/* ── GANTT ── */
+.g-months{display:flex;margin-left:145px;margin-bottom:4px}
+.g-month{flex:1;font-size:8px;color:var(--t3);text-align:center}
+.g-row{display:flex;align-items:center;margin-bottom:4px}
+.g-name{width:145px;font-size:9px;font-weight:500;flex-shrink:0;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)}
+.g-track{flex:1;height:18px;background:#F1F5F1;border-radius:3px;position:relative;overflow:hidden}
+.g-bg{position:absolute;height:100%;background:#E5EDE8;border-radius:3px}
+.g-fill{position:absolute;height:100%;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:8px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden}
+.g-stat{width:65px;flex-shrink:0;padding-left:7px}
+
+/* ── PHASE TABLE ── */
+.pt{width:100%;border-collapse:collapse}
+.pt th{padding:7px 10px;text-align:left;font-size:8px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);background:#FAFBFA;white-space:nowrap}
+.pt td{padding:7px 10px;border-bottom:1px solid #F3F7F4;vertical-align:middle;font-size:10px}
+.pt tr:hover td{background:#F9FCF9}
+.pt tr:last-child td{border-bottom:none}
+
+/* ── DOC ── */
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0}
+.doc-block{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px}
+.doc-h{font-size:11px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:6px;padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:9px}
+.doc-body{font-size:9px;color:var(--t2);line-height:1.85}
+.doc-body strong{color:var(--t1)}
+.seuil{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:9px;color:var(--t2)}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.step{display:flex;gap:8px;margin-bottom:6px}
+.stepn{width:19px;height:19px;border-radius:50%;background:var(--g1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;margin-top:1px}
+.steptxt{font-size:9px;color:var(--t2);line-height:1.6}
+.psc{width:100%;border-collapse:collapse;font-size:9px}
+.psc th{background:var(--g1);color:#fff;padding:8px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.psc td{padding:8px 10px;border:1px solid var(--border);vertical-align:top;line-height:1.6;color:var(--t2)}
+.psc tr:nth-child(even) td{background:#FAFBFA}
+.psc-user{font-weight:700;color:var(--t1)}
+
+/* MAQUETTE BADGE */
+.mq{position:fixed;top:10px;right:12px;background:var(--g1);color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;z-index:999;border:2px solid var(--g3);box-shadow:0 3px 12px rgba(11,61,46,0.3);letter-spacing:.04em}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:20px;color:var(--t3);font-size:11px}
+
+/* ANIMATE */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page.show>*{animation:fadeUp .2s ease both}
+.page.show>*:nth-child(2){animation-delay:.04s}
+.page.show>*:nth-child(3){animation-delay:.08s}
+.page.show>*:nth-child(4){animation-delay:.12s}
+.page.show>*:nth-child(5){animation-delay:.16s}
+</style>
+</head>
+<body>
+<div class="mq">Maquette N°2</div>
+
+<div class="layout">
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<div class="sb">
+  <div class="sb-head">
+    <div class="sb-logo">
+      <div class="sb-icon">🦷</div>
+      <div>
+        <div class="sb-brand">SANI<span>TORAL</span></div>
+      </div>
+    </div>
+    <div class="sb-sub">PMO Dashboard · 2018–2022</div>
+  </div>
+
+  <div class="sb-nav">
+    <div class="nav-item on" onclick="goPage('p1',this)"><div class="nav-dot" style="background:#4ADE80"></div>Vue globale</div>
+    <div class="nav-item"   onclick="goPage('p2',this)"><div class="nav-dot" style="background:#F59E0B"></div>Suivi Gantt</div>
+    <div class="nav-item"   onclick="goPage('p3',this)"><div class="nav-dot" style="background:#1D4ED8"></div>Détail phases</div>
+    <div class="nav-item"   onclick="goPage('p4',this)"><div class="nav-dot" style="background:#7C3AED"></div>Documentation</div>
+  </div>
+
+  <div class="sb-filters">
+    <div class="sb-flbl">Filtres globaux</div>
+    <select class="sb-sel" id="sel-region" onchange="applyFilters()">
+      <option value="">Toutes les régions</option>
+      <option value="Europe C/E">Europe C/E</option>
+      <option value="Europe Occ.">Europe Occidentale</option>
+      <option value="APAC">APAC</option>
+      <option value="Amériques">Amériques</option>
+    </select>
+    <select class="sb-sel" id="sel-type" onchange="applyFilters()">
+      <option value="">Tous les types</option>
+      <option value="Marketing">Marketing – Lancement</option>
+      <option value="IT – CRM">IT – CRM</option>
+    </select>
+    <select class="sb-sel" id="sel-statut" onchange="applyFilters()">
+      <option value="">Tous les statuts</option>
+      <option value="Alerte">En alerte</option>
+      <option value="Surveiller">À surveiller</option>
+      <option value="Normal">Normal</option>
+    </select>
+    <div class="sb-alert" id="sb-alert-txt">⚠ Chargement...</div>
+  </div>
+</div>
+
+<!-- ════════════ MAIN ════════════ -->
+<div class="main">
+<div class="pages">
+
+<!-- ══ PAGE 1 : VUE GLOBALE ══ -->
+<div class="page show" id="p1">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-icon">🌍</div>
+      <div>
+        <div class="tb-title">Vue globale</div>
+        <div class="tb-sub" id="p1-sub">Portefeuille 104 projets · 2018–2022</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip chip-n">Oct 2022</span>
+      <span class="chip chip-g">✓ Données réelles</span>
+    </div>
+  </div>
+
+  <!-- FILTERBAR INDICATEUR -->
+  <div class="fbar">
+    <span class="fbar-lbl">Indicateur</span>
+    <div class="fgrp" id="ind-grp">
+      <div class="fbtn on" data-ind="ec"  onclick="setIndicator(this)">💰 Coûts</div>
+      <div class="fbtn"    data-ind="ed"  onclick="setIndicator(this)">⏱ Délais</div>
+      <div class="fbtn"    data-ind="edl" onclick="setIndicator(this)">📦 Livrables</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="fbar-lbl">Région</span>
+    <div class="fgrp" id="reg-grp">
+      <div class="fbtn on" data-val="" onclick="setFBarFilter('region',this)">Toutes</div>
+      <div class="fbtn" data-val="Europe C/E" onclick="setFBarFilter('region',this)">Europe C/E</div>
+      <div class="fbtn" data-val="Europe Occ." onclick="setFBarFilter('region',this)">Europe Occ.</div>
+      <div class="fbtn" data-val="APAC" onclick="setFBarFilter('region',this)">APAC</div>
+      <div class="fbtn" data-val="Amériques" onclick="setFBarFilter('region',this)">Amériques</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="fbar-lbl">Type</span>
+    <div class="fgrp" id="type-grp">
+      <div class="fbtn on" data-val="" onclick="setFBarFilter('type',this)">Tous</div>
+      <div class="fbtn" data-val="Marketing" onclick="setFBarFilter('type',this)">Marketing</div>
+      <div class="fbtn" data-val="IT – CRM" onclick="setFBarFilter('type',this)">IT – CRM</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--g2)"></div>
+      <div class="kpi-ico" style="background:#DCFCE7">📁</div>
+      <div class="kpi-val" id="kpi-total" style="color:var(--g1)">—</div>
+      <div class="kpi-lbl">Total projets</div>
+      <div class="kpi-tag" style="background:#DCFCE7;color:#166534">2018–2022</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--red)"></div>
+      <div class="kpi-ico" style="background:var(--redbg)">⚠️</div>
+      <div class="kpi-val" id="kpi-ecart" style="color:var(--red)">—</div>
+      <div class="kpi-lbl" id="kpi-ecart-lbl">% Écart Coûts moyen</div>
+      <div class="kpi-tag" id="kpi-ecart-tag" style="background:var(--redbg);color:var(--redtxt)">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--ora)"></div>
+      <div class="kpi-ico" style="background:var(--orabg)">📊</div>
+      <div class="kpi-val" id="kpi-alerte" style="color:var(--ora)">—</div>
+      <div class="kpi-lbl">% Projets en alerte</div>
+      <div class="kpi-tag" id="kpi-alerte-tag" style="background:var(--orabg);color:var(--oratxt)">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--blu)"></div>
+      <div class="kpi-ico" style="background:var(--blubg)">💼</div>
+      <div class="kpi-val" id="kpi-budget" style="color:var(--blu)">—</div>
+      <div class="kpi-lbl">Budget planifié</div>
+      <div class="kpi-tag" style="background:var(--blubg);color:var(--blutxt)">Référence</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--red)"></div>
+      <div class="kpi-ico" style="background:var(--redbg)">💸</div>
+      <div class="kpi-val" id="kpi-reel" style="color:var(--red)">—</div>
+      <div class="kpi-lbl">Coûts réels</div>
+      <div class="kpi-tag" id="kpi-reel-tag" style="background:var(--redbg);color:var(--redtxt)">—</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="g23">
+    <!-- LEFT : TOP5 + REGION BARS -->
+    <div class="card fill">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Top 5 — Projets avec les plus grands retards</div>
+          <div class="card-sub">Données réelles · triés par jours de retard</div>
+        </div>
+        <span class="tag tag-r" id="top5-tag">5 projets</span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>#</th><th>Projet</th><th>Région</th><th>Type</th>
+            <th id="th-ecart">Écart Coûts</th><th>Retard</th><th>Statut</th>
+          </tr>
+        </thead>
+        <tbody id="top5-body"></tbody>
+      </table>
+
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:600;color:var(--t1);margin-bottom:8px" id="region-bar-title">Dérive coûts par région</div>
+        <div class="hbars" id="region-bars"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT : MAP + DONUT -->
+    <div class="vstack">
+      <div class="card fill" style="display:flex;flex-direction:column">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Alertes par région</div>
+            <div class="card-sub">Nombre de projets en alerte</div>
+          </div>
+        </div>
+        <div class="map-box" style="flex:1">
+          <svg id="map-svg" width="100%" height="100%" viewBox="0 0 520 200" preserveAspectRatio="xMidYMid meet" style="display:block">
+            <!-- Grille de fond -->
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="520" height="200" fill="url(#grid)"/>
+            <!-- Amérique du Nord -->
+            <path d="M 30 30 Q 50 20 80 25 Q 110 22 130 35 Q 150 45 145 65 Q 135 80 120 90 Q 100 100 80 95 Q 60 90 45 75 Q 28 60 30 30Z" fill="#A8CABB" opacity="0.7"/>
+            <!-- Amérique centrale/Sud -->
+            <path d="M 95 105 Q 115 100 125 115 Q 135 130 130 155 Q 125 175 110 182 Q 95 185 85 170 Q 75 155 80 135 Q 82 118 95 105Z" fill="#B8D4C5" opacity="0.6"/>
+            <!-- Europe -->
+            <path d="M 225 25 Q 250 18 270 28 Q 285 35 288 50 Q 285 62 270 68 Q 255 72 240 65 Q 225 58 222 45 Q 220 35 225 25Z" fill="#A8CABB" opacity="0.75"/>
+            <!-- Afrique -->
+            <path d="M 240 80 Q 265 75 278 90 Q 290 105 288 130 Q 285 158 268 170 Q 250 178 235 168 Q 220 155 220 130 Q 218 105 228 88 Q 234 82 240 80Z" fill="#C5D9C8" opacity="0.65"/>
+            <!-- Asie -->
+            <path d="M 305 20 Q 360 12 400 22 Q 435 30 445 50 Q 448 68 430 80 Q 405 90 375 88 Q 345 85 320 72 Q 298 58 300 40 Q 302 28 305 20Z" fill="#A8CABB" opacity="0.7"/>
+            <!-- Asie du Sud-Est / Océanie -->
+            <path d="M 390 100 Q 420 95 440 108 Q 455 120 448 140 Q 440 155 425 158 Q 410 158 400 145 Q 390 130 392 115 Q 393 106 390 100Z" fill="#B8D4C5" opacity="0.6"/>
+            <!-- Océanie -->
+            <path d="M 420 155 Q 445 150 458 162 Q 468 174 460 184 Q 450 192 438 190 Q 425 188 420 177 Q 415 165 420 155Z" fill="#C5D9C8" opacity="0.55"/>
+            <!-- Dots dynamiques -->
+            <g id="map-dots"></g>
+          </svg>
+          <div class="map-leg">
+            <div class="ml-i"><div class="ml-d" style="background:var(--red)"></div>Alerte</div>
+            <div class="ml-i"><div class="ml-d" style="background:var(--ora)"></div>Surveiller</div>
+            <div class="ml-i"><div class="ml-d" style="background:var(--g2)"></div>Normal</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Répartition des statuts</div></div>
+        <div class="drow">
+          <svg width="78" height="78" viewBox="0 0 78 78" id="donut-svg">
+            <circle cx="39" cy="39" r="27" fill="none" stroke="#F3F4F6" stroke-width="12"/>
+            <circle id="d-alerte"    cx="39" cy="39" r="27" fill="none" stroke="var(--red)" stroke-width="12" stroke-dasharray="0 170" stroke-dashoffset="42" style="transition:stroke-dasharray .5s ease"/>
+            <circle id="d-surveiller" cx="39" cy="39" r="27" fill="none" stroke="var(--ora)" stroke-width="12" stroke-dasharray="0 170" stroke-dashoffset="42" style="transition:stroke-dasharray .5s ease;transition-delay:.1s"/>
+            <circle id="d-normal"    cx="39" cy="39" r="27" fill="none" stroke="var(--g2)"  stroke-width="12" stroke-dasharray="0 170" stroke-dashoffset="42" style="transition:stroke-dasharray .5s ease;transition-delay:.2s"/>
+            <text id="donut-total" x="39" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">—</text>
+            <text x="39" y="48" text-anchor="middle" font-size="8" fill="#6B7280">projets</text>
+          </svg>
+          <div class="dleg">
+            <div class="dl"><div class="dd" style="background:var(--red)"></div>En alerte<div class="dv" id="d-lbl-a">—</div></div>
+            <div class="dl"><div class="dd" style="background:var(--ora)"></div>À surveiller<div class="dv" id="d-lbl-s">—</div></div>
+            <div class="dl"><div class="dd" style="background:var(--g2)"></div>Normal<div class="dv" id="d-lbl-n">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE 2 : GANTT ══ -->
+<div class="page" id="p2">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-icon">📅</div>
+      <div>
+        <div class="tb-title">Suivi Gantt</div>
+        <div class="tb-sub" id="p2-sub">Avancement des projets vs planning initial</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip chip-n" id="p2-chip">—</span>
+    </div>
+  </div>
+  <div class="fbar" id="fbar-p2">
+    <span class="fbar-lbl">Indicateur</span>
+    <div class="fgrp" id="ind-grp-p2">
+      <div class="fbtn on" data-ind="ec"  onclick="setIndicatorSync(this)">💰 Coûts</div>
+      <div class="fbtn"    data-ind="ed"  onclick="setIndicatorSync(this)">⏱ Délais</div>
+      <div class="fbtn"    data-ind="edl" onclick="setIndicatorSync(this)">📦 Livrables</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="fbar-lbl">Région</span>
+    <div class="fgrp" id="reg-grp-p2">
+      <div class="fbtn on" data-val="" onclick="setFBarFilterSync('region',this)">Toutes</div>
+      <div class="fbtn" data-val="Europe C/E" onclick="setFBarFilterSync('region',this)">Europe C/E</div>
+      <div class="fbtn" data-val="Europe Occ." onclick="setFBarFilterSync('region',this)">Europe Occ.</div>
+      <div class="fbtn" data-val="APAC" onclick="setFBarFilterSync('region',this)">APAC</div>
+      <div class="fbtn" data-val="Amériques" onclick="setFBarFilterSync('region',this)">Amériques</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="fbar-lbl">Type</span>
+    <div class="fgrp" id="type-grp-p2">
+      <div class="fbtn on" data-val="" onclick="setFBarFilterSync('type',this)">Tous</div>
+      <div class="fbtn" data-val="Marketing" onclick="setFBarFilterSync('type',this)">Marketing</div>
+      <div class="fbtn" data-val="IT – CRM" onclick="setFBarFilterSync('type',this)">IT – CRM</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">Timeline des projets</div><div class="card-sub">Top 12 par amplitude de retard · Vert = dans les temps · Orange = à risque · Rouge = en retard</div></div>
+    </div>
+    <div class="g-months">
+      <div class="g-month">Jan</div><div class="g-month">Fév</div><div class="g-month">Mar</div>
+      <div class="g-month">Avr</div><div class="g-month">Mai</div><div class="g-month">Juin</div>
+      <div class="g-month">Juil</div><div class="g-month">Août</div><div class="g-month">Sep</div>
+      <div class="g-month">Oct</div><div class="g-month">Nov</div><div class="g-month">Déc</div>
+    </div>
+    <div id="gantt-rows"></div>
+    <div style="display:flex;gap:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t2)"><span style="width:10px;height:10px;border-radius:2px;background:#6B7280;display:inline-block"></span>Terminé / avance</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t2)"><span style="width:10px;height:10px;border-radius:2px;background:#16A34A;display:inline-block"></span>Dans les temps</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t2)"><span style="width:10px;height:10px;border-radius:2px;background:#EA580C;display:inline-block"></span>À risque (+30j)</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t2)"><span style="width:10px;height:10px;border-radius:2px;background:#DC2626;display:inline-block"></span>En retard (+60j)</span>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Projets en retard vs avance</div></div>
+      <div class="hbars" id="gantt-retard-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Retard moyen par région (jours)</div></div>
+      <div class="hbars" id="gantt-region-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Délais réels vs prévision</div></div>
+      <div class="drow">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="24" fill="none" stroke="var(--blu)" stroke-width="10" stroke-dasharray="57 96" stroke-dashoffset="14"/>
+          <circle cx="36" cy="36" r="24" fill="none" stroke="#BFDBFE" stroke-width="10" stroke-dasharray="39 96" stroke-dashoffset="-43"/>
+        </svg>
+        <div class="dleg">
+          <div class="dl"><div class="dd" style="background:var(--blu)"></div>Réels<div class="dv">46K (46,4%)</div></div>
+          <div class="dl"><div class="dd" style="background:#BFDBFE"></div>Prévision<div class="dv">53K (53,6%)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE 3 : PHASES ══ -->
+<div class="page" id="p3">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-icon">📊</div>
+      <div>
+        <div class="tb-title">Détail des phases</div>
+        <div class="tb-sub">Écarts réels par phase · données extraites du Excel</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip chip-n">10 phases</span>
+    </div>
+  </div>
+  <div class="fbar" id="fbar-p3">
+    <span class="fbar-lbl">Indicateur</span>
+    <div class="fgrp" id="ind-grp-p3">
+      <div class="fbtn on" data-ind="ec"  onclick="setIndicatorSync(this)">💰 Coûts</div>
+      <div class="fbtn"    data-ind="ed"  onclick="setIndicatorSync(this)">⏱ Délais</div>
+      <div class="fbtn"    data-ind="edl" onclick="setIndicatorSync(this)">📦 Livrables</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="fbar-lbl">Région</span>
+    <div class="fgrp" id="reg-grp-p3">
+      <div class="fbtn on" data-val="" onclick="setFBarFilterSync('region',this)">Toutes</div>
+      <div class="fbtn" data-val="Europe C/E" onclick="setFBarFilterSync('region',this)">Europe C/E</div>
+      <div class="fbtn" data-val="Europe Occ." onclick="setFBarFilterSync('region',this)">Europe Occ.</div>
+      <div class="fbtn" data-val="APAC" onclick="setFBarFilterSync('region',this)">APAC</div>
+      <div class="fbtn" data-val="Amériques" onclick="setFBarFilterSync('region',this)">Amériques</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="fbar-lbl">Type</span>
+    <div class="fgrp" id="type-grp-p3">
+      <div class="fbtn on" data-val="" onclick="setFBarFilterSync('type',this)">Tous</div>
+      <div class="fbtn" data-val="Marketing" onclick="setFBarFilterSync('type',this)">Marketing</div>
+      <div class="fbtn" data-val="IT – CRM" onclick="setFBarFilterSync('type',this)">IT – CRM</div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card fill">
+      <div class="card-head"><div class="card-title">Écarts par phase</div><div class="card-sub" style="margin-top:1px">Seuils : ≥15% rouge · 7-15% orange · <7% vert</div></div>
+      <table class="pt" id="phase-table">
+        <thead><tr><th>Phase</th><th>Écart Coûts</th><th>Écart Délais</th><th>Écart Livrables</th><th>Risque global</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="vstack">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Écart coûts par phase</div><div class="card-sub" style="margin-top:1px">Couleur = seuil d'alerte</div></div>
+        <div class="hbars" id="phase-cost-bars"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Livrables réels vs prévision</div></div>
+        <div class="drow">
+          <svg width="70" height="70" viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="24" fill="none" stroke="#EC4899" stroke-width="10" stroke-dasharray="45 96" stroke-dashoffset="14"/>
+            <circle cx="35" cy="35" r="24" fill="none" stroke="#FBCFE8" stroke-width="10" stroke-dasharray="51 96" stroke-dashoffset="-45"/>
+          </svg>
+          <div class="dleg">
+            <div class="dl"><div class="dd" style="background:#EC4899"></div>Réels<div class="dv">8K (47,2%)</div></div>
+            <div class="dl"><div class="dd" style="background:#FBCFE8"></div>Prévision<div class="dv">9K (52,8%)</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Répartition par type</div></div>
+        <div class="hbars">
+          <div class="hbr"><div class="hbl">Marketing – Lancement</div><div class="hbt"><div class="hbf" style="width:50%;background:var(--g2)"><span>52 projets</span></div></div></div>
+          <div class="hbr"><div class="hbl">IT – CRM Implement.</div><div class="hbt"><div class="hbf" style="width:50%;background:var(--blu)"><span>52 projets</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE 4 : DOCUMENTATION ══ -->
+<div class="page" id="p4">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-icon">📋</div>
+      <div>
+        <div class="tb-title">Documentation</div>
+        <div class="tb-sub">PSC · Seuils d'alerte · Procédures · Modèle de données</div>
+      </div>
+    </div>
+  </div>
+  <div class="doc-grid">
+    <div class="doc-block">
+      <div class="doc-h">🎯 Objectif & KPIs</div>
+      <div class="doc-body">
+        <strong>Objectif :</strong> Permettre aux directeurs de piloter la performance des 104 projets Sanitoral, d'identifier rapidement les écarts significatifs et de prendre des décisions correctives.<br><br>
+        <strong>KPIs calculés :</strong><br>
+        • Écart Coûts % = (Réel − Planifié) / Planifié<br>
+        • Écart Délais % = (Durée réelle − Planifiée) / Planifiée<br>
+        • Écart Livrables % = (Livrables réels − Planifiés) / Planifiés<br><br>
+        <strong>Score de risque :</strong> Un projet est en alerte si au moins un KPI dépasse 15% en valeur absolue.
+      </div>
+    </div>
+    <div class="doc-block">
+      <div class="doc-h">🚦 Seuils d'alerte</div>
+      <div class="doc-body">
+        <div class="seuil"><div class="sdot" style="background:var(--red)"></div>≥ 15% → <strong>Alerte rouge</strong></div>
+        <div class="seuil"><div class="sdot" style="background:var(--ora)"></div>7% à 15% → <strong>À surveiller</strong></div>
+        <div class="seuil"><div class="sdot" style="background:var(--g2)"></div>< 7% → <strong>Contrôle normal</strong></div>
+        <br>
+        <strong>Résultats sur les 104 projets :</strong><br>
+        • 73 projets en alerte (70,2%)<br>
+        • 27 projets à surveiller (26,0%)<br>
+        • 4 projets normaux (3,8%)<br><br>
+        <strong>Phase critique :</strong> Phase D – Testing → écart coûts +401,3%
+      </div>
+    </div>
+    <div class="doc-block">
+      <div class="doc-h">🔄 Procédure de mise à jour hebdomadaire</div>
+      <div class="doc-body">
+        <div class="step"><div class="stepn">1</div><div class="steptxt">Remplacer le fichier source Excel (même nom, même structure)</div></div>
+        <div class="step"><div class="stepn">2</div><div class="steptxt">Ouvrir Power BI Desktop</div></div>
+        <div class="step"><div class="stepn">3</div><div class="steptxt">Cliquer sur <strong>Actualiser</strong> dans le ruban Accueil</div></div>
+        <div class="step"><div class="stepn">4</div><div class="steptxt">Vérifier la cohérence des KPI (budget, nb projets)</div></div>
+        <div class="step"><div class="stepn">5</div><div class="steptxt">Publier la version mise à jour (si applicable)</div></div>
+        <br><em>Toutes les transformations sont automatisées via Power Query.</em>
+      </div>
+    </div>
+    <div class="doc-block">
+      <div class="doc-h">🗄️ Modèle de données — Schéma en étoile</div>
+      <div class="doc-body">
+        <strong>Table de faits :</strong> Projects_plans (520 lignes · 6 colonnes)<br><br>
+        <strong>Tables de dimension :</strong><br>
+        • Project_Locations — 104 projets · 53 pays<br>
+        • Country_Profiles — régions, types d'entités<br>
+        • Project_type — 52 Marketing · 52 IT CRM<br>
+        • Actual_Costs — coûts réels par projet/phase<br>
+        • Actual_Duration — durées réelles par phase<br>
+        • Actual_Delivrable — livrables réels par phase<br><br>
+        <strong>Relations :</strong> Chaque dimension reliée via Project ID (clé étrangère).
+      </div>
+    </div>
+  </div>
+  <div class="doc-block" style="margin-top:0">
+    <div class="doc-h">👥 Product Strategy Canvas — User Stories</div>
+    <table class="psc">
+      <thead>
+        <tr><th style="width:120px">Utilisateur</th><th>User Story 1</th><th>User Story 2</th><th>User Story 3</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="psc-user">Directeur Général</span></td><td>Visualiser la performance globale IT & Marketing pour piloter la stratégie de l'entreprise.</td><td>Être alerté en cas d'écarts significatifs pour identifier rapidement les projets à risque.</td><td>Décider de l'arrêt ou la poursuite d'un projet sur base d'indicateurs fiables.</td></tr>
+        <tr><td><span class="psc-user">Directeur Régional</span></td><td>Visualiser la performance des projets de sa région pour superviser leur avancement.</td><td>Être alerté en cas de dérive significative pour intervenir rapidement.</td><td>Identifier les pays en difficulté pour accompagner les actions correctives.</td></tr>
+        <tr><td><span class="psc-user">Directeur Pays</span></td><td>Accéder aux indicateurs détaillés des projets de son pays.</td><td>Identifier rapidement les écarts de coûts, délais et livrables.</td><td>Prioriser les projets en alerte pour concentrer ses efforts.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /pages -->
+<div class="ptabs">
+  <div class="ptab on"  onclick="goTab('p1',this)">Vue globale</div>
+  <div class="ptab"     onclick="goTab('p2',this)">Suivi Gantt</div>
+  <div class="ptab"     onclick="goTab('p3',this)">Détail phases</div>
+  <div class="ptab"     onclick="goTab('p4',this)">Documentation</div>
+</div>
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const ALL_PROJECTS = [{"id": 1, "pc": 750000, "ac": 910300, "ec": 21.4, "ed": -5.5, "edl": -2.6, "retard": -26, "country": "Equateur", "region": "Amériques", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 2, "pc": 1500000, "ac": 1292600, "ec": -13.8, "ed": -17.0, "edl": -11.3, "retard": -62, "country": "France", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 3, "pc": 750000, "ac": 933500, "ec": 24.5, "ed": 16.3, "edl": -6.8, "retard": 65, "country": "Liban", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-03"}, {"id": 4, "pc": 750000, "ac": 953100, "ec": 27.1, "ed": 94.7, "edl": -4.2, "retard": 143, "country": "Egypte", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 5, "pc": 750000, "ac": 759800, "ec": 1.3, "ed": -32.0, "edl": -3.4, "retard": -139, "country": "Afrique du Sud", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 6, "pc": 750000, "ac": 892200, "ec": 19.0, "ed": 21.7, "edl": -7.0, "retard": 69, "country": "Albanie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-05"}, {"id": 7, "pc": 1500000, "ac": 1430800, "ec": -4.6, "ed": -1.1, "edl": -6.1, "retard": -5, "country": "Hollande", "region": "Europe Occ.", "type": "Marketing", "statut": "Normal", "start": "2018-02"}, {"id": 8, "pc": 1500000, "ac": 1502700, "ec": 0.2, "ed": -12.1, "edl": -8.2, "retard": -38, "country": "Allemagne", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "start": "2018-04"}, {"id": 9, "pc": 1500000, "ac": 1708000, "ec": 13.9, "ed": -23.7, "edl": -8.7, "retard": -82, "country": "Belgique", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 10, "pc": 500000, "ac": 470600, "ec": -5.9, "ed": 13.5, "edl": -4.8, "retard": 23, "country": "Benin", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-02"}, {"id": 11, "pc": 1500000, "ac": 1672800, "ec": 11.5, "ed": 49.1, "edl": -6.7, "retard": 106, "country": "Italie", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 12, "pc": 750000, "ac": 699700, "ec": -6.7, "ed": -7.3, "edl": -11.8, "retard": -32, "country": "Hongrie", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-03"}, {"id": 13, "pc": 750000, "ac": 671700, "ec": -10.4, "ed": -14.9, "edl": -9.5, "retard": -87, "country": "France", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "start": "2018-02"}, {"id": 14, "pc": 750000, "ac": 931500, "ec": 24.2, "ed": -25.7, "edl": -3.3, "retard": -118, "country": "Croatie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 15, "pc": 500000, "ac": 491500, "ec": -1.7, "ed": -3.0, "edl": -8.6, "retard": -14, "country": "Burkina Faso", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-01"}, {"id": 16, "pc": 500000, "ac": 666900, "ec": 33.4, "ed": -10.5, "edl": -7.7, "retard": -32, "country": "Cote d'Ivoire", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-02"}, {"id": 17, "pc": 1500000, "ac": 1482100, "ec": -1.2, "ed": -25.0, "edl": -5.1, "retard": -124, "country": "Espagne", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 18, "pc": 500000, "ac": 449800, "ec": -10.0, "ed": -35.7, "edl": -4.6, "retard": -150, "country": "Gabon", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 19, "pc": 1500000, "ac": 1497000, "ec": -0.2, "ed": -3.3, "edl": -9.9, "retard": -21, "country": "Republique Chèque", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-03"}, {"id": 20, "pc": 750000, "ac": 904800, "ec": 20.6, "ed": 3.1, "edl": -7.1, "retard": 13, "country": "Colombie", "region": "Amériques", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 21, "pc": 750000, "ac": 765900, "ec": 2.1, "ed": -14.2, "edl": -7.8, "retard": -62, "country": "Estonie", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-04"}, {"id": 22, "pc": 750000, "ac": 797200, "ec": 6.3, "ed": -14.3, "edl": -4.8, "retard": -90, "country": "Bresil", "region": "Amériques", "type": "Marketing", "statut": "Surveiller", "start": "2018-03"}, {"id": 23, "pc": 1500000, "ac": 1897500, "ec": 26.5, "ed": -14.1, "edl": -7.1, "retard": -35, "country": "Suisse", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 24, "pc": 750000, "ac": 739900, "ec": -1.3, "ed": -28.3, "edl": -7.7, "retard": -173, "country": "Ukraine", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-03"}, {"id": 25, "pc": 500000, "ac": 554800, "ec": 11.0, "ed": -12.0, "edl": -14.3, "retard": -50, "country": "Togo", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-02"}, {"id": 26, "pc": 1500000, "ac": 1593400, "ec": 6.2, "ed": 7.7, "edl": -11.9, "retard": 18, "country": "Allemagne", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "start": "2018-05"}, {"id": 27, "pc": 750000, "ac": 736500, "ec": -1.8, "ed": 1.1, "edl": -4.1, "retard": 5, "country": "La Reunion", "region": "Europe C/E", "type": "Marketing", "statut": "Normal", "start": "2018-02"}, {"id": 28, "pc": 1500000, "ac": 1501900, "ec": 0.1, "ed": -6.0, "edl": -7.1, "retard": -20, "country": "Russie", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-01"}, {"id": 29, "pc": 750000, "ac": 897100, "ec": 19.6, "ed": -15.8, "edl": -9.1, "retard": -33, "country": "Belgique", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-03"}, {"id": 30, "pc": 1500000, "ac": 1536800, "ec": 2.5, "ed": -20.3, "edl": -1.6, "retard": -104, "country": "Canada", "region": "Amériques", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 31, "pc": 1500000, "ac": 1576300, "ec": 5.1, "ed": -33.0, "edl": -4.7, "retard": -93, "country": "Norvege", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 32, "pc": 750000, "ac": 982400, "ec": 31.0, "ed": -40.2, "edl": -8.2, "retard": -141, "country": "Turquie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-02"}, {"id": 33, "pc": 750000, "ac": 684900, "ec": -8.7, "ed": -2.9, "edl": -6.2, "retard": -9, "country": "Malte", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-03"}, {"id": 34, "pc": 1500000, "ac": 1605500, "ec": 7.0, "ed": -34.7, "edl": -8.1, "retard": -211, "country": "Israel", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-05"}, {"id": 35, "pc": 1500000, "ac": 1600100, "ec": 6.7, "ed": -7.9, "edl": -7.4, "retard": -28, "country": "Norvege", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "start": "2018-03"}, {"id": 36, "pc": 750000, "ac": 822200, "ec": 9.6, "ed": -11.1, "edl": -8.1, "retard": -40, "country": "Portugal", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "start": "2018-02"}, {"id": 37, "pc": 750000, "ac": 930700, "ec": 24.1, "ed": -33.2, "edl": -5.2, "retard": -128, "country": "Pologne", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-01"}, {"id": 38, "pc": 750000, "ac": 669900, "ec": -10.7, "ed": -13.0, "edl": -13.0, "retard": -52, "country": "Grece", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "start": "2018-04"}, {"id": 39, "pc": 1500000, "ac": 1766200, "ec": 17.7, "ed": -11.7, "edl": -8.6, "retard": -46, "country": "Danemark", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-02"}, {"id": 40, "pc": 500000, "ac": 542400, "ec": 8.5, "ed": 0.2, "edl": -3.8, "retard": 1, "country": "Senegal", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-04"}, {"id": 41, "pc": 1500000, "ac": 1736000, "ec": 15.7, "ed": -23.6, "edl": -8.9, "retard": -84, "country": "Slovaquie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-05"}, {"id": 42, "pc": 750000, "ac": 972900, "ec": 29.7, "ed": -54.9, "edl": -8.2, "retard": -316, "country": "Lituanie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-05"}, {"id": 43, "pc": 1500000, "ac": 1845000, "ec": 23.0, "ed": -33.8, "edl": -2.9, "retard": -143, "country": "Luxembourg", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-02"}, {"id": 44, "pc": 750000, "ac": 751700, "ec": 0.2, "ed": 3.0, "edl": -4.3, "retard": 13, "country": "Jordanie", "region": "Europe C/E", "type": "Marketing", "statut": "Normal", "start": "2018-02"}, {"id": 45, "pc": 500000, "ac": 626000, "ec": 25.2, "ed": -33.1, "edl": -8.9, "retard": -178, "country": "Gambie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 46, "pc": 750000, "ac": 1009100, "ec": 34.5, "ed": -50.4, "edl": -4.1, "retard": -229, "country": "Macedoine", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 47, "pc": 500000, "ac": 453700, "ec": -9.3, "ed": 0.6, "edl": -7.4, "retard": 2, "country": "Niger", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "start": "2018-01"}, {"id": 48, "pc": 1500000, "ac": 1617900, "ec": 7.9, "ed": -29.2, "edl": -5.3, "retard": -152, "country": "Slovenie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 49, "pc": 750000, "ac": 840100, "ec": 12.0, "ed": -56.7, "edl": -6.1, "retard": -219, "country": "Ile Maurice", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-04"}, {"id": 50, "pc": 750000, "ac": 944800, "ec": 26.0, "ed": -49.3, "edl": -6.1, "retard": -268, "country": "Serbie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "start": "2018-05"}, {"id": 51, "pc": 1500000, "ac": 1678400, "ec": 11.9, "ed": -16.6, "edl": -13.2, "retard": -62, "country": "Suede", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "start": "2018-02"}, {"id": 52, "pc": 161200, "ac": 102900, "ec": -36.2, "ed": -13.7, "edl": -9.1, "retard": -74, "country": "France", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 53, "pc": 126200, "ac": 94700, "ec": -25.0, "ed": 16.5, "edl": -6.6, "retard": 64, "country": "Belgique", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-04"}, {"id": 54, "pc": 96200, "ac": 102900, "ec": 7.0, "ed": 17.2, "edl": -11.8, "retard": 116, "country": "Hollande", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 55, "pc": 104200, "ac": 90900, "ec": -12.8, "ed": -27.5, "edl": -7.1, "retard": -151, "country": "Luxembourg", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 56, "pc": 79200, "ac": 78800, "ec": -0.5, "ed": -0.5, "edl": -10.0, "retard": -3, "country": "Italie", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-02"}, {"id": 57, "pc": 78200, "ac": 103100, "ec": 31.8, "ed": -13.7, "edl": -6.8, "retard": -95, "country": "Japon", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 58, "pc": 119200, "ac": 115300, "ec": -3.3, "ed": -11.7, "edl": -9.4, "retard": -78, "country": "Espagne", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-04"}, {"id": 59, "pc": 82200, "ac": 84700, "ec": 3.0, "ed": 16.2, "edl": -5.4, "retard": 51, "country": "Hongrie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 60, "pc": 66200, "ac": 68900, "ec": 4.1, "ed": -7.1, "edl": -5.6, "retard": -50, "country": "Pologne", "region": "Europe C/E", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-03"}, {"id": 61, "pc": 93200, "ac": 108300, "ec": 16.2, "ed": 3.6, "edl": -6.1, "retard": 17, "country": "Republique Chèque", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 62, "pc": 100200, "ac": 113200, "ec": 13.0, "ed": -15.5, "edl": -7.9, "retard": -67, "country": "Slovaquie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 63, "pc": 78200, "ac": 120700, "ec": 54.3, "ed": -1.9, "edl": -7.2, "retard": -11, "country": "Allemagne", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 64, "pc": 90200, "ac": 101000, "ec": 12.0, "ed": -26.6, "edl": -8.4, "retard": -216, "country": "Serbie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 65, "pc": 48200, "ac": 73100, "ec": 51.7, "ed": 8.1, "edl": -6.7, "retard": 36, "country": "Croatie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 66, "pc": 90200, "ac": 107900, "ec": 19.6, "ed": -28.8, "edl": -11.1, "retard": -207, "country": "Slovenie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 67, "pc": 98200, "ac": 91800, "ec": -6.5, "ed": -27.5, "edl": -4.9, "retard": -160, "country": "Macedoine", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 68, "pc": 59200, "ac": 60100, "ec": 1.5, "ed": -15.5, "edl": -5.4, "retard": -110, "country": "Albanie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 69, "pc": 125200, "ac": 118100, "ec": -5.7, "ed": -36.3, "edl": -4.2, "retard": -273, "country": "Chine", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 70, "pc": 106200, "ac": 75800, "ec": -28.6, "ed": -10.6, "edl": -3.7, "retard": -62, "country": "Malte", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 71, "pc": 69200, "ac": 79700, "ec": 15.2, "ed": -2.9, "edl": -11.1, "retard": -19, "country": "Turquie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 72, "pc": 89200, "ac": 66800, "ec": -25.1, "ed": -13.4, "edl": -8.3, "retard": -87, "country": "Grece", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 73, "pc": 63200, "ac": 94800, "ec": 50.0, "ed": -11.2, "edl": -8.6, "retard": -46, "country": "Portugal", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 74, "pc": 74200, "ac": 74100, "ec": -0.1, "ed": -24.5, "edl": -6.2, "retard": -231, "country": "Ukraine", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 75, "pc": 149200, "ac": 108000, "ec": -27.6, "ed": -20.2, "edl": -9.6, "retard": -110, "country": "Russie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 76, "pc": 76200, "ac": 87200, "ec": 14.4, "ed": -18.2, "edl": -5.5, "retard": -101, "country": "Bielorussie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 77, "pc": 56200, "ac": 62700, "ec": 11.6, "ed": -16.9, "edl": -6.5, "retard": -133, "country": "Lituanie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 78, "pc": 60200, "ac": 67700, "ec": 12.5, "ed": 13.5, "edl": -13.3, "retard": 62, "country": "Estonie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-05"}, {"id": 79, "pc": 112200, "ac": 111900, "ec": -0.3, "ed": -28.5, "edl": -37.1, "retard": -243, "country": "Suede", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-02"}, {"id": 80, "pc": 117200, "ac": 96800, "ec": -17.4, "ed": -26.3, "edl": -41.5, "retard": -249, "country": "Danemark", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-02"}, {"id": 81, "pc": 169200, "ac": 118100, "ec": -30.2, "ed": -11.6, "edl": -38.0, "retard": -66, "country": "Norvege", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 82, "pc": 112200, "ac": 106800, "ec": -4.8, "ed": -20.8, "edl": -38.5, "retard": -127, "country": "Suisse", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-04"}, {"id": 83, "pc": 77400, "ac": 52900, "ec": -31.7, "ed": -17.7, "edl": -38.5, "retard": -127, "country": "Cote d'Ivoire", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 84, "pc": 74400, "ac": 82600, "ec": 11.0, "ed": -8.7, "edl": -41.7, "retard": -43, "country": "Chine", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 85, "pc": 93200, "ac": 87100, "ec": -6.5, "ed": -11.2, "edl": -36.4, "retard": -81, "country": "Afrique du Sud", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 86, "pc": 123400, "ac": 79200, "ec": -35.8, "ed": -10.7, "edl": -34.7, "retard": -69, "country": "France", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 87, "pc": 84400, "ac": 65000, "ec": -23.0, "ed": -2.8, "edl": -15.2, "retard": -19, "country": "Serbie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 88, "pc": 76400, "ac": 91600, "ec": 19.9, "ed": 20.6, "edl": -10.8, "retard": 104, "country": "Turquie", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 89, "pc": 138400, "ac": 62100, "ec": -55.1, "ed": -4.8, "edl": -9.2, "retard": -26, "country": "Grece", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 90, "pc": 59400, "ac": 61800, "ec": 4.0, "ed": 6.8, "edl": -7.6, "retard": 28, "country": "Afrique du Sud", "region": "Europe C/E", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-03"}, {"id": 91, "pc": 104400, "ac": 68600, "ec": -34.3, "ed": -14.1, "edl": -5.6, "retard": -87, "country": "Canada", "region": "Amériques", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 92, "pc": 65200, "ac": 58500, "ec": -10.3, "ed": 0.3, "edl": -13.1, "retard": 2, "country": "Pologne", "region": "Europe C/E", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-04"}, {"id": 93, "pc": 74200, "ac": 81700, "ec": 10.1, "ed": -5.1, "edl": -5.2, "retard": -29, "country": "Danemark", "region": "Europe Occ.", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-03"}, {"id": 94, "pc": 91200, "ac": 106900, "ec": 17.2, "ed": 4.1, "edl": -6.7, "retard": 21, "country": "Israel", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 95, "pc": 109200, "ac": 74000, "ec": -32.2, "ed": -19.6, "edl": -4.5, "retard": -123, "country": "Japon", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-04"}, {"id": 96, "pc": 146200, "ac": 59700, "ec": -59.2, "ed": -30.7, "edl": -6.2, "retard": -180, "country": "Chine", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 97, "pc": 70200, "ac": 80600, "ec": 14.8, "ed": 1.2, "edl": -11.1, "retard": 7, "country": "Japon", "region": "APAC", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-02"}, {"id": 98, "pc": 55200, "ac": 87800, "ec": 59.1, "ed": -14.0, "edl": -7.1, "retard": -82, "country": "Japon", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-02"}, {"id": 99, "pc": 76200, "ac": 77600, "ec": 1.8, "ed": -13.1, "edl": -10.3, "retard": -65, "country": "Indonesie", "region": "APAC", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-04"}, {"id": 100, "pc": 91200, "ac": 64800, "ec": -28.9, "ed": 1.5, "edl": -9.5, "retard": 9, "country": "Malaysie", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-05"}, {"id": 101, "pc": 121200, "ac": 98100, "ec": -19.1, "ed": -8.0, "edl": -9.4, "retard": -43, "country": "Chine", "region": "APAC", "type": "IT – CRM", "statut": "Alerte", "start": "2020-01"}, {"id": 102, "pc": 85200, "ac": 78800, "ec": -7.5, "ed": -28.4, "edl": -8.6, "retard": -174, "country": "Ile Maurice", "region": "Europe C/E", "type": "IT – CRM", "statut": "Alerte", "start": "2020-03"}, {"id": 103, "pc": 91200, "ac": 89500, "ec": -1.9, "ed": -12.9, "edl": -6.1, "retard": -59, "country": "La Reunion", "region": "Europe C/E", "type": "IT – CRM", "statut": "Surveiller", "start": "2020-05"}, {"id": 104, "pc": 750000, "ac": 706500, "ec": -5.8, "ed": 2.5, "edl": 0.0, "retard": 16, "country": "Bielorussie", "region": "Europe C/E", "type": "Marketing", "statut": "Normal", "start": "2018-05"}];
+const PHASES       = [{"name": "Phase 1 - Planning", "ec": 9.5, "ed": -15.5, "edl": -6.1}, {"name": "Phase 2 - Initiation", "ec": 9.3, "ed": -22.3, "edl": -8.4}, {"name": "Phase 3 - Implementation", "ec": 9.9, "ed": -12.4, "edl": -6.7}, {"name": "Phase 4 - Manufacturing", "ec": 8.1, "ed": -13.1, "edl": -6.1}, {"name": "Phase A - Initiation", "ec": 9.6, "ed": -14.7, "edl": -11.7}, {"name": "Phase B - Preparation", "ec": 19.0, "ed": -13.5, "edl": -12.2}, {"name": "Phase C - Development", "ec": 10.7, "ed": -13.9, "edl": -14.6}, {"name": "Phase D - Testing", "ec": 401.3, "ed": -4.0, "edl": -14.5}, {"name": "Phase E - Deployment", "ec": -40.5, "ed": -11.2, "edl": -12.3}, {"name": "Phase F - Post-deployment", "ec": 11.3, "ed": -12.1, "edl": -12.2}];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state = {
+  region:  '',
+  type:    '',
+  statut:  '',
+  indicator: 'ec'   // 'ec' | 'ed' | 'edl'
+};
+
+// ═══════════════════════════════════════════════
+// FILTER ENGINE
+// ═══════════════════════════════════════════════
+function filtered() {
+  return ALL_PROJECTS.filter(p => {
+    if (state.region  && p.region  !== state.region)  return false;
+    if (state.type    && p.type    !== state.type)    return false;
+    if (state.statut  && p.statut  !== state.statut)  return false;
+    return true;
+  });
+}
+
+function applyFilters() {
+  state.region  = document.getElementById('sel-region').value;
+  state.type    = document.getElementById('sel-type').value;
+  state.statut  = document.getElementById('sel-statut').value;
+  // sync fbar buttons
+  syncFBar('reg-grp',  'region');
+  syncFBar('type-grp', 'type');
+  renderAll();
+}
+
+function setFBarFilter(key, el) {
+  const val = el.dataset.val;
+  if (key === 'region') {
+    state.region = val;
+    document.getElementById('sel-region').value = val;
+  } else {
+    state.type = val;
+    document.getElementById('sel-type').value = val;
+  }
+  syncFBar(key==='region'?'reg-grp':'type-grp', key);
+  renderAll();
+}
+
+function syncFBar(grpId, key) {
+  const grp = document.getElementById(grpId);
+  if (!grp) return;
+  grp.querySelectorAll('.fbtn').forEach(b => {
+    b.classList.toggle('on', b.dataset.val === state[key]);
+  });
+}
+
+function setIndicator(el) {
+  state.indicator = el.dataset.ind;
+  document.querySelectorAll('#ind-grp .fbtn').forEach(b => b.classList.toggle('on', b===el));
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const IND_LABELS = {ec:'Coûts', ed:'Délais', edl:'Livrables'};
+const IND_UNITS  = {ec:'%',     ed:'%',      edl:'%'};
+
+function fmtM(v) {
+  if (v>=1e6) return (v/1e6).toFixed(1)+'M€';
+  return (v/1e3).toFixed(0)+'K€';
+}
+function fmtPct(v) { return (v>0?'+':'')+v.toFixed(1)+'%'; }
+
+function pillClass(v) {
+  const a = Math.abs(v);
+  if (a>=15) return 'pill-r';
+  if (a>=7)  return 'pill-o';
+  return 'pill-g';
+}
+function riskLabel(p) {
+  const maxA = Math.max(Math.abs(p.ec), Math.abs(p.ed), Math.abs(p.edl));
+  if (maxA>=15) return ['Critique','pill-r'];
+  if (maxA>=7)  return ['Modéré','pill-o'];
+  return ['Faible','pill-g'];
+}
+function statutPill(s) {
+  if (s==='Alerte')     return 'pill-r';
+  if (s==='Surveiller') return 'pill-o';
+  return 'pill-g';
+}
+function statutLabel(s) {
+  if (s==='Alerte')     return 'En alerte';
+  if (s==='Surveiller') return 'À surveiller';
+  return 'Normal';
+}
+
+// ═══════════════════════════════════════════════
+// RENDER KPIs
+// ═══════════════════════════════════════════════
+function renderKPIs(data) {
+  const total = data.length;
+  const pc    = data.reduce((s,p)=>s+p.pc,0);
+  const ac    = data.reduce((s,p)=>s+p.ac,0);
+  const ecG   = pc>0 ? (ac-pc)/pc*100 : 0;
+  const nbA   = data.filter(p=>p.statut==='Alerte').length;
+  const nbS   = data.filter(p=>p.statut==='Surveiller').length;
+  const nbN   = data.filter(p=>p.statut==='Normal').length;
+  const pctA  = total>0 ? nbA/total*100 : 0;
+
+  // Indicateur sélectionné
+  const ind   = state.indicator;
+  const indVal = total>0 ? data.reduce((s,p)=>s+p[ind],0)/total : 0;
+
+  document.getElementById('kpi-total').textContent   = total;
+  document.getElementById('kpi-budget').textContent  = fmtM(pc);
+  document.getElementById('kpi-reel').textContent    = fmtM(ac);
+
+  const ecartEl  = document.getElementById('kpi-ecart');
+  const ecartLbl = document.getElementById('kpi-ecart-lbl');
+  const ecartTag = document.getElementById('kpi-ecart-tag');
+  ecartEl.textContent  = fmtPct(indVal);
+  ecartLbl.textContent = `% Écart ${IND_LABELS[ind]} moyen`;
+  const cls = Math.abs(indVal)>=15?'red':Math.abs(indVal)>=7?'ora':'g2';
+  const clsMap = {red:'var(--red)',ora:'var(--ora)',g2:'var(--g2)'};
+  ecartEl.style.color  = clsMap[cls];
+  ecartTag.textContent = Math.abs(indVal)>=15?'🔴 Alerte':Math.abs(indVal)>=7?'🟠 Surveiller':'🟢 Normal';
+
+  document.getElementById('kpi-alerte').textContent    = pctA.toFixed(1)+'%';
+  document.getElementById('kpi-alerte-tag').textContent = `${nbA} / ${total}`;
+
+  const diff = ac-pc;
+  document.getElementById('kpi-reel-tag').textContent = (diff>=0?'+':'')+fmtM(diff)+' vs budget';
+
+
+  // Sous-titre
+  document.getElementById('p1-sub').textContent = `${total} projet${total>1?'s':''} · filtrés`;
+
+  // Donut
+  const circ = 2*Math.PI*27;
+  const dA = pctA/100*circ;
+  const dS = nbS/total*circ;
+  const dN = nbN/total*circ;
+  const off = 42;
+  function setDonut(id, da, offset) {
+    const el = document.getElementById(id);
+    el.setAttribute('stroke-dasharray',`${da} ${circ}`);
+    el.setAttribute('stroke-dashoffset', offset);
+  }
+  setDonut('d-alerte',    dA, off);
+  setDonut('d-surveiller',dS, off - dA);
+  setDonut('d-normal',    dN, off - dA - dS);
+  document.getElementById('donut-total').textContent = total;
+  document.getElementById('d-lbl-a').textContent = `${nbA} (${pctA.toFixed(1)}%)`;
+  document.getElementById('d-lbl-s').textContent = `${nbS} (${(nbS/total*100).toFixed(1)}%)`;
+  document.getElementById('d-lbl-n').textContent = `${nbN} (${(nbN/total*100).toFixed(1)}%)`;
+
+  // Sidebar alert
+  document.getElementById('sb-alert-txt').textContent = `⚠ ${nbA} projet${nbA>1?'s':''} en alerte`;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER TOP 5
+// ═══════════════════════════════════════════════
+function renderTop5(data) {
+  const ind = state.indicator;
+  const top5 = data.filter(p=>p.retard>0).sort((a,b)=>b.retard-a.retard).slice(0,5);
+  const body  = document.getElementById('top5-body');
+  const maxR  = top5.length>0 ? top5[0].retard : 1;
+  document.getElementById('top5-tag').textContent  = `${top5.length} projet${top5.length>1?'s':''}`;
+  document.getElementById('th-ecart').textContent  = `Écart ${IND_LABELS[ind]}`;
+
+  if (top5.length===0) {
+    body.innerHTML = `<tr><td colspan="7" class="empty">Aucun projet en retard pour cette sélection</td></tr>`;
+    return;
+  }
+  body.innerHTML = top5.map((p,i) => {
+    const bw = Math.round(p.retard/maxR*75);
+    const ec = p[ind];
+    const pc = pillClass(ec);
+    const sp = statutPill(p.statut);
+    const rc = i<2?'var(--red)':i<4?'var(--ora)':'var(--yel)';
+    return `<tr>
+      <td><div class="rank" style="background:${rc}">${i+1}</div></td>
+      <td style="font-weight:600">Proj. ${p.id}</td>
+      <td style="color:var(--t2)">${p.region}</td>
+      <td><span class="pill ${p.type==='Marketing'?'pill-g':'pill-b'}">${p.type==='Marketing'?'Mktg':'IT'}</span></td>
+      <td><span class="pill ${pc}">${fmtPct(ec)}</span></td>
+      <td><div style="display:inline-block;width:${bw}px;height:6px;border-radius:2px;background:${rc};margin-right:5px;vertical-align:middle"></div><span style="font-weight:600;color:${rc}">+${p.retard}j</span></td>
+      <td><span class="pill ${sp}">${statutLabel(p.statut)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// RENDER REGION BARS
+// ═══════════════════════════════════════════════
+function renderRegionBars(data) {
+  const ind = state.indicator;
+  const regions = ['Europe C/E','Europe Occ.','APAC','Amériques'];
+  const regionColors = {'Europe C/E':'var(--red)','Europe Occ.':'var(--ora)','APAC':'var(--yel)','Amériques':'var(--g2)'};
+
+  const stats = {};
+  regions.forEach(r => {
+    const rp = data.filter(p=>p.region===r);
+    if (rp.length===0) return;
+    const totalPc = rp.reduce((s,p)=>s+p.pc,0);
+    const totalAc = rp.reduce((s,p)=>s+p.ac,0);
+    const avgEc   = rp.reduce((s,p)=>s+p[ind],0)/rp.length;
+    stats[r] = {n:rp.length, pc:totalPc, ac:totalAc, ec:avgEc,
+                derive: totalAc-totalPc};
+  });
+
+  document.getElementById('region-bar-title').textContent =
+    `Dérive ${IND_LABELS[ind]} par région`;
+
+  const maxDerive = Math.max(...Object.values(stats).map(s=>Math.abs(s.derive)||1));
+  const html = regions.filter(r=>stats[r]).map(r => {
+    const s = stats[r];
+    const pct = Math.round(Math.abs(s.derive)/maxDerive*100);
+    const col = regionColors[r];
+    return `<div class="hbr">
+      <div class="hbl">${r}</div>
+      <div class="hbt"><div class="hbf" style="width:${pct}%;background:${col}">
+        <span>${fmtM(Math.abs(s.derive))}</span>
+      </div></div>
+      <div class="hbv" style="color:${col}">${s.n}p.</div>
+    </div>`;
+  }).join('');
+  document.getElementById('region-bars').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER MAP
+// ═══════════════════════════════════════════════
+function renderMap(data) {
+  const regionCoords = {
+    'Europe C/E':  {cx:268, cy:46},
+    'Europe Occ.': {cx:242, cy:50},
+    'APAC':        {cx:390, cy:52},
+    'Amériques':   {cx:88,  cy:58}
+  };
+  const svg = document.getElementById('map-dots');
+  const counts = {};
+  ['Europe C/E','Europe Occ.','APAC','Amériques'].forEach(r => {
+    counts[r] = {a:0, s:0, n:0, total:0};
+  });
+  data.forEach(p => {
+    if (counts[p.region]) {
+      counts[p.region].total++;
+      if (p.statut==='Alerte') counts[p.region].a++;
+      else if (p.statut==='Surveiller') counts[p.region].s++;
+      else counts[p.region].n++;
+    }
+  });
+  svg.innerHTML = Object.entries(regionCoords).map(([r,c]) => {
+    const cnt = counts[r];
+    if (!cnt || cnt.total===0) return '';
+    const col = cnt.a>0?'var(--red)':cnt.s>0?'var(--ora)':'var(--g2)';
+    const label = cnt.a>0?cnt.a:cnt.s>0?cnt.s:cnt.n;
+    const maxR = 15, minR = 7;
+    const allTotal = data.length||1;
+    const r2 = Math.round(minR + (cnt.total/allTotal)*(maxR-minR));
+    const pulse = cnt.a>0 ? `<animate attributeName="r" values="${r2};${r2+3};${r2}" dur="2s" repeatCount="indefinite"/>` : '';
+    return `<circle cx="${c.cx}" cy="${c.cy}" r="${r2}" fill="${col}" opacity="0.88">${pulse}</circle>
+      <text x="${c.cx}" y="${c.cy+3}" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="DM Sans,sans-serif">${label}</text>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// RENDER GANTT
+// ═══════════════════════════════════════════════
+function renderGantt(data) {
+  // Top 12 par retard absolu
+  const sorted = [...data].sort((a,b)=>b.retard-a.retard).slice(0,12);
+  const gc = {done:'#6B7280',ok:'#16A34A',late:'#DC2626',risk:'#EA580C'};
+  const gl = {done:'Avance',ok:'En cours',late:'Retard',risk:'À risque'};
+
+  const rows = sorted.map((p,i) => {
+    const start = Math.max(0, ((i*0.8)%12)/12*100);
+    const dur   = Math.min(100-start, 50+Math.random()*30);
+    let prog, ttype;
+    if (p.retard < 0)      { prog=100; ttype='done'; }
+    else if (p.retard < 30){ prog=85;  ttype='ok'; }
+    else if (p.retard < 60){ prog=60;  ttype='risk'; }
+    else                   { prog=40;  ttype='late'; }
+    const pw = prog/100*dur;
+    return `<div class="g-row">
+      <div class="g-name">Proj. ${p.id} – ${p.type==='Marketing'?'Mktg':'IT'}</div>
+      <div class="g-track">
+        <div class="g-bg" style="left:${start.toFixed(1)}%;width:${dur.toFixed(1)}%"></div>
+        <div class="g-fill" style="left:${start.toFixed(1)}%;width:${pw.toFixed(1)}%;background:${gc[ttype]}">${prog}%</div>
+      </div>
+      <div class="g-stat"><span class="pill" style="background:${gc[ttype]}22;color:${gc[ttype]}">${gl[ttype]}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('gantt-rows').innerHTML = rows || '<div class="empty">Aucun projet pour cette sélection</div>';
+
+  // Retard bars
+  const nbRetard = data.filter(p=>p.retard>0).length;
+  const nbAvance = data.filter(p=>p.retard<0).length;
+  const total    = data.length||1;
+  document.getElementById('gantt-retard-bars').innerHTML = `
+    <div class="hbr"><div class="hbl">En retard</div><div class="hbt"><div class="hbf" style="width:${nbRetard/total*100}%;background:var(--red)"><span>${nbRetard} projets</span></div></div></div>
+    <div class="hbr"><div class="hbl">En avance</div><div class="hbt"><div class="hbf" style="width:${nbAvance/total*100}%;background:var(--g2)"><span>${nbAvance} projets</span></div></div></div>
+    <div class="hbr"><div class="hbl">À l'heure</div><div class="hbt"><div class="hbf" style="width:${(total-nbRetard-nbAvance)/total*100}%;background:var(--blu)"><span>${total-nbRetard-nbAvance} projets</span></div></div></div>`;
+
+  // Region bars
+  const regions = ['Europe C/E','Europe Occ.','APAC','Amériques'];
+  const rColors = ['var(--red)','var(--ora)','var(--yel)','var(--g2)'];
+  const rStats  = regions.map(r => {
+    const rp = data.filter(p=>p.region===r && p.retard>0);
+    return {r, avg: rp.length>0 ? Math.round(rp.reduce((s,p)=>s+p.retard,0)/rp.length) : 0};
+  }).filter(s=>s.avg>0);
+  const maxAvg = Math.max(...rStats.map(s=>s.avg), 1);
+  document.getElementById('gantt-region-bars').innerHTML = rStats.map((s,i) =>
+    `<div class="hbr"><div class="hbl">${s.r}</div><div class="hbt"><div class="hbf" style="width:${s.avg/maxAvg*100}%;background:${rColors[i]}"><span>+${s.avg}j moy.</span></div></div></div>`
+  ).join('');
+
+  // P2 chip
+  const nbR = data.filter(p=>p.retard>0).length;
+  document.getElementById('p2-chip').textContent = `${nbR} projet${nbR>1?'s':''} en retard`;
+
+  document.getElementById('p2-sub').textContent  = `${data.length} projets · avancement vs planning`;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER PHASES (statiques — pas affectées par filtre projet)
+// ═══════════════════════════════════════════════
+function renderPhases() {
+  const tbody = document.querySelector('#phase-table tbody');
+  tbody.innerHTML = PHASES.map(ph => {
+    const [rl, rc] = (() => {
+      const maxA = Math.max(Math.abs(ph.ec),Math.abs(ph.ed),Math.abs(ph.edl));
+      if(maxA>=15) return ['Critique','pill-r'];
+      if(maxA>=7)  return ['Modéré','pill-o'];
+      return ['Faible','pill-g'];
+    })();
+    return `<tr>
+      <td><strong>${ph.name}</strong></td>
+      <td><span class="pill ${pillClass(ph.ec)}">${fmtPct(ph.ec)}</span></td>
+      <td><span class="pill ${pillClass(ph.ed)}">${fmtPct(ph.ed)}</span></td>
+      <td><span class="pill ${pillClass(ph.edl)}">${fmtPct(ph.edl)}</span></td>
+      <td><span class="pill ${rc}">${rl}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Cost bars
+  const sorted = [...PHASES].sort((a,b)=>b.ec-a.ec);
+  const maxEc  = Math.max(...PHASES.map(p=>Math.abs(p.ec)), 1);
+  document.getElementById('phase-cost-bars').innerHTML = sorted.map(ph => {
+    const col = Math.abs(ph.ec)>=15?'var(--red)':Math.abs(ph.ec)>=7?'var(--ora)':'var(--g2)';
+    const w   = Math.abs(ph.ec)/maxEc*100;
+    return `<div class="hbr">
+      <div class="hbl">${ph.name.replace('Phase ','Ph. ')}</div>
+      <div class="hbt"><div class="hbf" style="width:${w}%;background:${col}"><span>${fmtPct(ph.ec)}</span></div></div>
+      <div class="hbv" style="color:${col}">${fmtPct(ph.ec)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════════
+function renderAll() {
+  const data = filtered();
+  renderKPIs(data);
+  renderTop5(data);
+  renderRegionBars(data);
+  renderMap(data);
+  renderGantt(data);
+  // Sync all filterbars
+  ['reg-grp','reg-grp-p2','reg-grp-p3'].forEach(gid => {
+    const g = document.getElementById(gid);
+    if (g) g.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.val===state.region));
+  });
+  ['type-grp','type-grp-p2','type-grp-p3'].forEach(gid => {
+    const g = document.getElementById(gid);
+    if (g) g.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.val===state.type));
+  });
+  ['ind-grp','ind-grp-p2','ind-grp-p3'].forEach(gid => {
+    const g = document.getElementById(gid);
+    if (g) g.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.ind===state.indicator));
+  });
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+const PAGE_IDS = ['p1','p2','p3','p4'];
+
+function goPage(id, el) {
+  PAGE_IDS.forEach(p => document.getElementById(p).classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+  document.querySelectorAll('.nav-item').forEach(l => l.classList.remove('on'));
+  el.classList.add('on');
+  const i = PAGE_IDS.indexOf(id);
+  document.querySelectorAll('.ptab').forEach((t,j) => t.classList.toggle('on', i===j));
+}
+
+function goTab(id, el) {
+  PAGE_IDS.forEach(p => document.getElementById(p).classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  const i = PAGE_IDS.indexOf(id);
+  document.querySelectorAll('.nav-item').forEach((l,j) => l.classList.toggle('on', i===j));
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+renderAll();
+renderPhases();
+
+// ═══════════════════════════════════════════════
+// SYNC FILTERBARS (p2/p3 → state global)
+// ═══════════════════════════════════════════════
+function setIndicatorSync(el) {
+  state.indicator = el.dataset.ind;
+  // sync tous les groupes ind
+  ['ind-grp','ind-grp-p2','ind-grp-p3'].forEach(gid => {
+    const g = document.getElementById(gid);
+    if (g) g.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.ind===state.indicator));
+  });
+  renderAll();
+}
+
+function setFBarFilterSync(key, el) {
+  const val = el.dataset.val;
+  if (key === 'region') {
+    state.region = val;
+    document.getElementById('sel-region').value = val;
+    ['reg-grp','reg-grp-p2','reg-grp-p3'].forEach(gid => {
+      const g = document.getElementById(gid);
+      if (g) g.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.val===val));
+    });
+  } else {
+    state.type = val;
+    document.getElementById('sel-type').value = val;
+    ['type-grp','type-grp-p2','type-grp-p3'].forEach(gid => {
+      const g = document.getElementById(gid);
+      if (g) g.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.val===val));
+    });
+  }
+  renderAll();
+}
+
+// Synchro initiale des filterbars p2/p3 au changement sidebar
+const _origApplyFilters = applyFilters;
+
+</script>
+</body>
+</html>
