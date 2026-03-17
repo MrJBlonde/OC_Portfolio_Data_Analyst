@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Sanitoral PMO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Identite Sanitoral */
+  --brand:#0F3B2A;--brand2:#16A34A;--brand3:#86EFAC;
+  /* Canvas & cards */
+  --bg:#F5F7F5;--card:#C8DACC;--card2:#BCCCBF;
+  --bdr:#9DBAA8;--bdr2:#88A896;
+  /* Dimensions */
+  --ec:#D97706;--ecbg:#FEF3C7;--ecbdr:#FDE68A;
+  --ed:#7C3AED;--edbg:#EDE9FE;--edbdr:#C4B5FD;
+  --edl:#0891B2;--edlbg:#E0F2FE;--edlbdr:#BAE6FD;
+  /* Statuts */
+  --ok:#16A34A;--okbg:#DCFCE7;
+  --warn:#DC2626;--warnbg:#FEE2E2;
+  /* Texte */
+  --t1:#060F08;--t2:#1A3326;--t3:#2E5040;--t4:#587060;
+  --accent-type:#0F766E;--accent-reg:#6D28D9;--accent-stat:#DC2626;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,sans-serif}
+.slide{width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOPBAR ─────────────────────────────── */
+.topbar{background:var(--brand);height:48px;display:flex;align-items:center;padding:0 18px;gap:0;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:9px;padding-right:18px;border-right:1px solid rgba(255,255,255,.1);margin-right:14px}
+.logo-sq{width:28px;height:28px;background:var(--brand2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.logo-tx{font-size:15px;font-weight:800;color:#fff;letter-spacing:.05em}
+.logo-tx em{color:var(--brand3);font-style:normal}
+.nav{display:flex;gap:2px}
+.nb{padding:6px 15px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;border:none;background:transparent;font-family:Inter,sans-serif;transition:all .2s;letter-spacing:.01em}
+.nb:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.08)}
+.nb.on{color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.12)}
+.tr{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tc{font-size:10px;color:rgba(255,255,255,.35);font-weight:400}
+.ta{font-size:10px;font-weight:600;padding:3px 11px;border-radius:20px;background:rgba(220,38,38,.18);border:1px solid rgba(220,38,38,.35);color:#FCA5A5}
+
+/* ── FILTERBAR ──────────────────────────── */
+.fbar{display:flex;flex-direction:column;padding:7px 18px;gap:5px;flex-shrink:0;background:var(--card);border-bottom:1.5px solid var(--bdr)}
+.fbar-row{display:flex;align-items:center;gap:10px;height:26px}
+.fl{font-size:10px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;flex-shrink:0}
+.fg{display:flex;gap:3px;flex-shrink:0}
+.fb{font-size:10px;font-weight:500;padding:3px 11px;border-radius:20px;cursor:pointer;border:1.5px solid var(--bdr2);color:var(--t2);background:transparent;transition:all .18s;white-space:nowrap;user-select:none;font-family:Inter,sans-serif}
+.fb:hover:not(.on){border-color:var(--brand2);color:var(--brand)}
+.fb[data-v="all"].on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.fb[data-v="ec"].on{background:var(--ec);color:#fff;border-color:var(--ec)}
+.fb[data-v="ed"].on{background:var(--ed);color:#fff;border-color:var(--ed)}
+.fb[data-v="edl"].on{background:var(--edl);color:#fff;border-color:var(--edl)}
+/* Type */
+.fb[data-v="Marketing"].on{background:#0F766E;color:#fff;border-color:#0F766E}
+.fb[data-v="IT-CRM"].on{background:#1D4ED8;color:#fff;border-color:#1D4ED8}
+/* Region */
+.fb[data-v="Europe C/E"].on{background:#6D28D9;color:#fff;border-color:#6D28D9}
+.fb[data-v="Europe Occ."].on{background:#0369A1;color:#fff;border-color:#0369A1}
+.fb[data-v="APAC"].on{background:#B45309;color:#fff;border-color:#B45309}
+.fb[data-v="Ameriques"].on{background:#0F766E;color:#fff;border-color:#0F766E}
+/* Statut */
+.fb[data-v="Alerte"].on{background:#DC2626;color:#fff;border-color:#DC2626}
+.fb[data-v="Surveiller"].on{background:#D97706;color:#fff;border-color:#D97706}
+.fb[data-v="Normal"].on{background:#16A34A;color:#fff;border-color:#16A34A}
+.fsep{width:1px;height:18px;background:var(--bdr);flex-shrink:0}
+.fhint{font-size:10px;color:var(--t4);font-style:italic}
+
+/* ── CONTENT ────────────────────────────── */
+.content{flex:1;min-height:0;padding:12px 14px;display:flex;flex-direction:column;gap:0;overflow:hidden}
+.page{display:none;height:100%;flex-direction:column;gap:9px}
+.page.on{display:flex}
+
+/* ── GRIDS ──────────────────────────────── */
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.g211{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:9px}
+.fill{flex:1;min-height:0}
+
+/* ── CARD ───────────────────────────────── */
+.card{background:var(--card);border-radius:10px;border:1.5px solid var(--bdr);padding:14px 16px;display:flex;flex-direction:column;gap:9px;overflow:hidden;transition:all .22s ease}
+.card.dim{opacity:.38;transform:scale(.985)}
+.card.active-ec{background:var(--ecbg);border-color:var(--ec);box-shadow:0 6px 24px rgba(217,119,6,.2),0 2px 8px rgba(217,119,6,.12);transform:translateY(-2px)}
+.card.active-ed{background:var(--edbg);border-color:var(--ed);box-shadow:0 6px 24px rgba(124,58,237,.2),0 2px 8px rgba(124,58,237,.12);transform:translateY(-2px)}
+.card.active-edl{background:var(--edlbg);border-color:var(--edl);box-shadow:0 6px 24px rgba(8,145,178,.2),0 2px 8px rgba(8,145,178,.12);transform:translateY(-2px)}
+/* Highlight filtre actif non-indicateur */
+.filter-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-left:auto;flex-shrink:0}
+.kpi-stat-highlight{border-left:3px solid;padding-left:8px;transition:all .2s}
+.ct{font-size:11px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;border-left:3px solid var(--brand2);padding-left:8px}
+
+/* ── KPI CARD ───────────────────────────── */
+.kpi-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.kpi-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.02em}
+.kval{font-size:36px;font-weight:700;line-height:1;letter-spacing:-.02em;margin-top:2px}
+.ksub{font-size:11px;color:var(--t2);margin-top:1px;font-weight:500}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px}
+.ki{padding:7px 9px;border-radius:7px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.6)}
+.kiv{font-size:15px;font-weight:600;line-height:1}
+.kil{font-size:10px;color:var(--t2);margin-top:2px;font-weight:500}
+.kbar{height:4px;background:rgba(0,0,0,.07);border-radius:2px;overflow:hidden;margin-top:4px}
+.kbf{height:100%;border-radius:2px;transition:width .55s ease}
+.kfoot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+
+/* ── PILLS ──────────────────────────────── */
+.pill{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.pr{background:var(--warnbg);color:var(--warn)}
+.po{background:#FEF3C7;color:#92400E}
+.pg{background:var(--okbg);color:#166534}
+.pb{background:var(--edlbg);color:#0369A1}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;display:inline-block}
+
+/* ── DONUT ──────────────────────────────── */
+.drow{display:flex;align-items:center;gap:12px}
+.dleg{display:flex;flex-direction:column;gap:5px;flex:1}
+.dl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--t1)}
+.dv{margin-left:auto;font-size:14px;font-weight:700;color:var(--t1)}
+
+/* ── BARS ───────────────────────────────── */
+.bars{display:flex;flex-direction:column;gap:5px}
+.br{display:flex;align-items:center;gap:6px}
+.bl{font-size:10px;color:var(--t2);width:90px;flex-shrink:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt{flex:1;height:18px;background:rgba(0,0,0,.07);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;transition:width .45s ease}
+.bf span{font-size:10px;font-weight:600;color:#fff;white-space:nowrap}
+.bv{font-size:11px;font-weight:600;width:40px;text-align:right;flex-shrink:0}
+
+/* ── TRIPLE BAR ─────────────────────────── */
+.b3{display:flex;flex-direction:column;gap:9px}
+.b3-item{display:flex;flex-direction:column;gap:3px}
+.b3-lbl{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px}
+.b3-line{display:flex;align-items:center;gap:6px}
+.b3-key{font-size:10px;font-weight:700;width:16px;flex-shrink:0;text-align:right}
+.b3-track{flex:1;height:14px;background:rgba(0,0,0,.07);border-radius:4px;overflow:hidden}
+.b3-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 6px;transition:width .45s ease}
+.b3-fill span{font-size:9px;font-weight:600;color:#fff;white-space:nowrap}
+.b3-num{font-size:11px;font-weight:600;width:38px;text-align:right;flex-shrink:0}
+
+/* ── TOP 5 ──────────────────────────────── */
+.t5{display:flex;flex-direction:column}
+.t5-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.07)}
+.t5-item:last-child{border:none}
+.t5-rank{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.t5-name{font-size:12px;font-weight:700;color:var(--t1)}
+.t5-meta{font-size:9px;color:var(--t4);margin-top:2px;display:flex;gap:3px}
+.t5-bar{height:3px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;margin-top:3px}
+.t5-bfill{height:100%;border-radius:2px}
+.t5-val{font-size:14px;font-weight:700;min-width:40px;text-align:right}
+
+/* ── TABLE ──────────────────────────────── */
+.twrap{overflow:auto;flex:1;min-height:0;border-radius:8px;border:1.5px solid var(--bdr)}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl thead{position:sticky;top:0;z-index:2}
+.tbl th{padding:9px 10px;text-align:left;font-size:11px;font-weight:700;color:#fff;background:var(--brand);white-space:nowrap;cursor:pointer;user-select:none;border-bottom:2px solid var(--bdr2);text-transform:uppercase;letter-spacing:.05em;transition:opacity .2s}
+.tbl th:hover{background:#1A5C3A}
+.tbl th.asc::after{content:" ▲";font-size:7px}
+.tbl th.desc::after{content:" ▼";font-size:7px}
+.tbl td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.05);vertical-align:middle;white-space:nowrap;color:var(--t1)}
+.tbl tr:hover td{background:rgba(255,255,255,.5)}
+.tbl tr.ra td{background:rgba(220,38,38,.06)}
+.tbl tr.ra:hover td{background:rgba(220,38,38,.12)}
+.tbl tfoot td{padding:6px 9px;font-weight:600;background:rgba(0,0,0,.06);border-top:1.5px solid var(--bdr);font-size:9px;color:var(--t2)}
+
+/* ── PHASE TABLE ────────────────────────── */
+.pt{width:100%;border-collapse:collapse;font-size:11px}
+.pt th{padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--bdr);background:var(--brand);transition:opacity .2s}
+.pt td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.05);color:var(--t1);transition:opacity .2s}
+.pt tr:hover td{background:rgba(255,255,255,.4)}
+.pt tr:last-child td{border:none}
+
+/* ── GANTT ──────────────────────────────── */
+.grow{display:flex;align-items:center;margin-bottom:3px}
+.gname{width:110px;font-size:10px;font-weight:500;color:var(--t2);flex-shrink:0;padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gtrack{flex:1;height:20px;background:rgba(0,0,0,.07);border-radius:4px;position:relative;overflow:hidden}
+.gbg{position:absolute;height:100%;background:rgba(0,0,0,.05);border-radius:3px}
+.gfill{position:absolute;height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:600;color:#fff}
+.gstat{width:56px;flex-shrink:0;padding-left:5px}
+
+/* ── SEARCH ─────────────────────────────── */
+.si{padding:7px 12px;border:1.5px solid var(--bdr2);border-radius:7px;font-size:11px;font-family:Inter,sans-serif;color:var(--t1);outline:none;background:rgba(255,255,255,.6);width:100%;transition:all .18s}
+.si:focus{border-color:var(--brand2);background:rgba(255,255,255,.9)}
+.si::placeholder{color:var(--t4)}
+
+/* ── DOC ─────────────────────────────────── */
+.db{background:var(--card);border-radius:10px;border:1.5px solid var(--bdr);padding:14px}
+.dh{font-size:12px;font-weight:800;color:var(--t1);border-bottom:1.5px solid var(--bdr);padding-bottom:8px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;border-left:3px solid var(--brand2);padding-left:8px}
+.dd{font-size:11px;color:var(--t2);line-height:1.85}
+.dd strong{color:var(--t1)}
+.stp{display:flex;gap:8px;margin-bottom:6px}
+.stn{width:18px;height:18px;border-radius:50%;background:var(--brand2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;margin-top:1px}
+.stt{font-size:10px;color:var(--t2);line-height:1.5}
+.psc{width:100%;border-collapse:collapse;font-size:11px}
+.psc th{background:var(--brand);color:#fff;padding:8px 11px;font-size:10px;font-weight:600;text-transform:uppercase}
+.psc td{padding:8px 11px;border:1px solid var(--bdr);line-height:1.5;color:var(--t2)}
+.psc tr:nth-child(even) td{background:rgba(255,255,255,.3)}
+.psc-u{font-weight:700;color:var(--t1)}
+</style>
+</head>
+<body>
+<div class="slide">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-sq">🦷</div>
+    <div class="logo-tx">SANI<em>TORAL</em></div>
+  </div>
+  <div class="nav">
+    <button class="nb on" onclick="nav('p1',this)">Vue globale</button>
+    <button class="nb"    onclick="nav('p2',this)">Tableau projets</button>
+    <button class="nb"    onclick="nav('p3',this)">Gantt</button>
+    <button class="nb"    onclick="nav('p4',this)">Phases</button>
+    <button class="nb"    onclick="nav('p5',this)">Documentation</button>
+  </div>
+  <div class="tr">
+    <span class="tc" id="top-sub">104 projets</span>
+    <span class="ta" id="top-alert">73 en alerte</span>
+  </div>
+</div>
+
+<!-- FILTERBAR -->
+<div class="fbar">
+  <!-- Ligne 1 : Indicateur + Type -->
+  <div class="fbar-row">
+    <span class="fl">Indicateur</span>
+    <div class="fg" id="fg-ind">
+      <button class="fb on" data-v="all" onclick="fi('ind',this)">Tous</button>
+      <button class="fb" data-v="ec"  onclick="fi('ind',this)">💰 Couts</button>
+      <button class="fb" data-v="ed"  onclick="fi('ind',this)">⏱ Delais</button>
+      <button class="fb" data-v="edl" onclick="fi('ind',this)">📦 Livrables</button>
+    </div>
+    <span class="fhint" id="fhint">3 dimensions affichees</span>
+    <div class="fsep"></div>
+    <span class="fl">Type de projet</span>
+    <div class="fg" id="fg-type">
+      <button class="fb on" data-v=""          onclick="fi('type',this)">Tous</button>
+      <button class="fb"    data-v="Marketing" onclick="fi('type',this)">Marketing</button>
+      <button class="fb"    data-v="IT-CRM"    onclick="fi('type',this)">IT-CRM</button>
+    </div>
+  </div>
+  <!-- Ligne 2 : Region + Statut -->
+  <div class="fbar-row">
+    <span class="fl">Region</span>
+    <div class="fg" id="fg-reg">
+      <button class="fb on" data-v=""            onclick="fi('reg',this)">Toutes</button>
+      <button class="fb"    data-v="Europe C/E"  onclick="fi('reg',this)">Europe C/E</button>
+      <button class="fb"    data-v="Europe Occ." onclick="fi('reg',this)">Europe Occ.</button>
+      <button class="fb"    data-v="APAC"        onclick="fi('reg',this)">APAC</button>
+      <button class="fb"    data-v="Ameriques"   onclick="fi('reg',this)">Ameriques</button>
+    </div>
+    <div class="fsep"></div>
+    <span class="fl">Statut</span>
+    <div class="fg" id="fg-stat">
+      <button class="fb on" data-v=""           onclick="fi('stat',this)">Tous</button>
+      <button class="fb"    data-v="Alerte"     onclick="fi('stat',this)">🔴 Alerte</button>
+      <button class="fb"    data-v="Surveiller" onclick="fi('stat',this)">🟠 Surveiller</button>
+      <button class="fb"    data-v="Normal"     onclick="fi('stat',this)">🟢 Normal</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- PAGE 1 -->
+<div class="page on" id="p1">
+  <div class="g4">
+    <div class="card" id="kc-ec">
+      <div class="kpi-head">
+        <div class="ct" style="color:var(--ec);border-left-color:var(--ec)">Couts</div>
+        <div class="kpi-badge" style="background:var(--ecbg);color:var(--ec)" id="k-ec-badge">—</div>
+      </div>
+      <div class="kval" style="color:var(--ec)" id="k-ec">—</div>
+      <div class="ksub">ecart couts moyen</div>
+      <div class="kgrid">
+        <div class="ki"><div class="kiv" style="color:#1D4ED8" id="k-pc">—</div><div class="kil">Planifie</div></div>
+        <div class="ki"><div class="kiv" style="color:var(--ec)" id="k-ac">—</div><div class="kil">Reel</div></div>
+      </div>
+      <div class="kbar"><div id="k-pbar" class="kbf" style="background:var(--ec);width:0%"></div></div>
+      <div class="kfoot">
+        <span style="font-size:8px;color:var(--t3)">Depassement</span>
+        <span style="font-size:12px;font-weight:700;color:var(--ec)" id="k-diff">—</span>
+      </div>
+    </div>
+
+    <div class="card" id="kc-ed">
+      <div class="kpi-head">
+        <div class="ct" style="color:var(--ed);border-left-color:var(--ed)">Delais</div>
+        <div class="kpi-badge" style="background:var(--edbg);color:var(--ed)" id="k-ed-badge">—</div>
+      </div>
+      <div class="kval" style="color:var(--ed)" id="k-ed">—</div>
+      <div class="ksub">ecart delais moyen</div>
+      <div class="kgrid">
+        <div class="ki"><div class="kiv" style="color:var(--warn)" id="k-nret">—</div><div class="kil">En retard</div></div>
+        <div class="ki"><div class="kiv" style="color:var(--ok)" id="k-nav">—</div><div class="kil">En avance</div></div>
+      </div>
+      <div class="kbar"><div id="k-dbar" class="kbf" style="background:var(--ed);width:0%"></div></div>
+      <div class="kfoot">
+        <span style="font-size:8px;color:var(--t3)">Retard max</span>
+        <span style="font-size:12px;font-weight:700;color:var(--warn)" id="k-maxret">—</span>
+      </div>
+    </div>
+
+    <div class="card" id="kc-edl">
+      <div class="kpi-head">
+        <div class="ct" style="color:var(--edl);border-left-color:var(--edl)">Livrables</div>
+        <div class="kpi-badge" style="background:var(--edlbg);color:var(--edl)" id="k-edl-badge">—</div>
+      </div>
+      <div class="kval" style="color:var(--edl)" id="k-edl">—</div>
+      <div class="ksub">ecart livrables moyen</div>
+      <div class="kgrid">
+        <div class="ki"><div class="kiv" style="color:var(--edl)" id="k-pdl">—</div><div class="kil">Planifies</div></div>
+        <div class="ki"><div class="kiv" style="color:var(--warn)" id="k-adl">—</div><div class="kil">Reels</div></div>
+      </div>
+      <div class="kbar"><div id="k-lbar" class="kbf" style="background:var(--edl);width:0%"></div></div>
+      <div class="kfoot">
+        <span style="font-size:8px;color:var(--t3)">Manque</span>
+        <span style="font-size:12px;font-weight:700;color:var(--warn)" id="k-ldiff">—</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-top:2px solid var(--brand2)">
+      <div class="ct" style="color:var(--brand2);border-left-color:var(--brand2)">Statuts</div>
+      <div class="drow">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="26" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="11"/>
+          <circle id="da" cx="36" cy="36" r="26" fill="none" stroke="#DC2626" stroke-width="11" stroke-dasharray="0 163" stroke-dashoffset="41"/>
+          <circle id="ds" cx="36" cy="36" r="26" fill="none" stroke="#D97706" stroke-width="11" stroke-dasharray="0 163" stroke-dashoffset="41"/>
+          <circle id="dn" cx="36" cy="36" r="26" fill="none" stroke="#16A34A" stroke-width="11" stroke-dasharray="0 163" stroke-dashoffset="41"/>
+          <text id="dt" x="36" y="33" text-anchor="middle" font-size="13" font-weight="700" fill="#0A1A10">—</text>
+          <text x="36" y="44" text-anchor="middle" font-size="7" fill="#5A7A68">projets</text>
+        </svg>
+        <div class="dleg">
+          <div class="dl"><span class="dot" style="background:#DC2626"></span>Alerte<div class="dv" id="dla">—</div></div>
+          <div class="dl"><span class="dot" style="background:#D97706"></span>Surveiller<div class="dv" id="dls">—</div></div>
+          <div class="dl"><span class="dot" style="background:#16A34A"></span>Normal<div class="dv" id="dln">—</div></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(0,0,0,.08);padding-top:7px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:8px;color:var(--t3)">Score risque moy.</span>
+        <span style="font-size:15px;font-weight:700;color:var(--warn)" id="k-score">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:9px;flex:1;min-height:0">
+    <!-- GRAND GRAPHIQUE barres groupées SVG -->
+    <div class="card fill">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div class="ct" id="reg-title" style="font-size:12px">Ecarts par region — Couts / Delais / Livrables</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t2)"><span style="width:11px;height:11px;border-radius:2px;background:var(--ec);display:inline-block"></span>Couts</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t2)"><span style="width:11px;height:11px;border-radius:2px;background:var(--ed);display:inline-block"></span>Delais</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t2)"><span style="width:11px;height:11px;border-radius:2px;background:var(--edl);display:inline-block"></span>Livrables</span>
+        </div>
+      </div>
+      <div style="flex:1;min-height:0;position:relative">
+        <canvas id="chart-reg" style="width:100%;height:100%"></canvas>
+      </div>
+    </div>
+    <!-- Colonne droite -->
+    <div style="display:flex;flex-direction:column;gap:9px;min-height:0">
+      <div class="card fill">
+        <div class="ct" style="font-size:12px">Top 3 retards (jours)</div>
+        <div class="t5" id="top5" style="flex:1;overflow:hidden"></div>
+      </div>
+      <div class="card" style="flex-shrink:0">
+        <div class="ct" style="font-size:12px">Marketing vs IT-CRM</div>
+        <div id="type-b3" style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="p2">
+  <div class="g3" style="flex-shrink:0">
+    <div class="card">
+      <div class="ct">Selection</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin-top:2px">
+        <div><div style="font-size:22px;font-weight:700;color:var(--t1)" id="t-tot">—</div><div style="font-size:8px;color:var(--t3)">Projets</div></div>
+        <div><div style="font-size:22px;font-weight:700;color:var(--warn)" id="t-al">—</div><div style="font-size:8px;color:var(--t3)">Alertes</div></div>
+        <div><div style="font-size:22px;font-weight:700;color:var(--ed)" id="t-rt">—</div><div style="font-size:8px;color:var(--t3)">En retard</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Ecarts moyens</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;text-align:center;margin-top:2px">
+        <div style="padding:7px;background:var(--ecbg);border-radius:7px;border:1px solid var(--ecbdr)"><div style="font-size:15px;font-weight:700;color:var(--ec)" id="t-ec">—</div><div style="font-size:7px;color:var(--ec);opacity:.7;margin-top:2px">Couts</div></div>
+        <div style="padding:7px;background:var(--edbg);border-radius:7px;border:1px solid var(--edbdr)"><div style="font-size:15px;font-weight:700;color:var(--ed)" id="t-ed">—</div><div style="font-size:7px;color:var(--ed);opacity:.7;margin-top:2px">Delais</div></div>
+        <div style="padding:7px;background:var(--edlbg);border-radius:7px;border:1px solid var(--edlbdr)"><div style="font-size:15px;font-weight:700;color:var(--edl)" id="t-edl">—</div><div style="font-size:7px;color:var(--edl);opacity:.7;margin-top:2px">Livr.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Recherche</div>
+      <input class="si" id="srch" type="text" placeholder="Projet, region, pays..." oninput="renderTable()">
+      <div style="font-size:8px;color:var(--t4)">Cliquer en-tetes pour trier &middot; <span id="sc">104 resultats</span></div>
+    </div>
+  </div>
+  <div class="card fill" style="padding:0;overflow:hidden">
+    <div class="twrap">
+      <table class="tbl" id="ptbl">
+        <thead><tr>
+          <th onclick="srt('id')">#</th>
+          <th onclick="srt('region')">Region</th>
+          <th onclick="srt('country')">Pays</th>
+          <th onclick="srt('type')">Type</th>
+          <th onclick="srt('pc')">Budget</th>
+          <th onclick="srt('ac')">Reel</th>
+          <th onclick="srt('ec')" id="th-ec" style="background:#A86000">Couts</th>
+          <th onclick="srt('ed')" id="th-ed" style="background:#5B21B6">Delais</th>
+          <th onclick="srt('edl')" id="th-edl" style="background:#0369A1">Livr.</th>
+          <th onclick="srt('retard')">Retard</th>
+          <th onclick="srt('score')">Score</th>
+          <th onclick="srt('statut')">Statut</th>
+        </tr></thead>
+        <tbody id="ptbody"></tbody>
+        <tfoot id="ptfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="p3">
+  <div class="g3" style="flex-shrink:0">
+    <div class="card"><div class="ct">Statut projets</div><div class="bars" id="g-stat"></div></div>
+    <div class="card"><div class="ct">Retard moyen / region</div><div class="bars" id="g-reg"></div></div>
+    <div class="card"><div class="ct">Duree / type</div><div class="bars">
+      <div class="br"><div class="bl">Marketing</div><div class="bt"><div class="bf" style="width:82%;background:var(--brand2)"><span>9,8 mois</span></div></div></div>
+      <div class="br"><div class="bl">IT-CRM</div><div class="bt"><div class="bf" style="width:58%;background:#1D4ED8"><span>7,0 mois</span></div></div></div>
+      <div class="br"><div class="bl">Moyenne</div><div class="bt"><div class="bf" style="width:70%;background:var(--t3)"><span>8,4 mois</span></div></div></div>
+    </div></div>
+  </div>
+  <div class="card fill">
+    <div class="ct">Timeline — Top 15 projets</div>
+    <div style="display:flex;margin-left:96px;margin-bottom:4px">
+      <div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Jan</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Fev</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Mar</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Avr</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Mai</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Juin</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Juil</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Aout</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Sep</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Oct</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Nov</div><div style="flex:1;font-size:8px;color:var(--t4);text-align:center">Dec</div>
+    </div>
+    <div id="g-rows" style="overflow:hidden"></div>
+    <div style="display:flex;gap:14px;margin-top:7px;padding-top:7px;border-top:1px solid rgba(0,0,0,.08)">
+      <span style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t3)"><span style="width:9px;height:9px;border-radius:2px;background:#6B7280;display:inline-block"></span>Avance</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t3)"><span style="width:9px;height:9px;border-radius:2px;background:#16A34A;display:inline-block"></span>Normal</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t3)"><span style="width:9px;height:9px;border-radius:2px;background:#D97706;display:inline-block"></span>A risque</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t3)"><span style="width:9px;height:9px;border-radius:2px;background:#DC2626;display:inline-block"></span>En retard</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page" id="p4">
+  <div class="g2 fill">
+    <div class="card fill">
+      <div class="ct">Ecarts par phase</div>
+      <table class="pt">
+        <thead><tr>
+          <th>Phase</th>
+          <th id="pth-ec" style="background:#A86000">Couts</th>
+          <th id="pth-ed" style="background:#5B21B6">Delais</th>
+          <th id="pth-edl" style="background:#0369A1">Livr.</th>
+          <th>Score</th><th>Risque</th>
+        </tr></thead>
+        <tbody id="ph-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card fill" style="overflow:hidden">
+      <div class="ct" id="ph-b3-title">Triple ecart par phase</div>
+      <div id="ph-b3" style="overflow:hidden;flex:1;display:flex;flex-direction:column;justify-content:space-around"></div>
+    </div>
+  </div>
+  <div class="g3" style="flex-shrink:0">
+    <div class="card"><div class="ct">Score de risque</div><div class="bars" id="ph-risk"></div></div>
+    <div class="card"><div class="ct">Marketing vs IT</div><div id="tc-b3" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div></div>
+    <div class="card">
+      <div class="ct" style="color:var(--edl)">Livrables reels vs prevision</div>
+      <div class="drow" style="justify-content:center;margin-top:6px">
+        <svg width="70" height="70" viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="26" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="11"/>
+          <circle cx="35" cy="35" r="26" fill="none" stroke="#0891B2" stroke-width="11" stroke-dasharray="51 163" stroke-dashoffset="41"/>
+          <circle cx="35" cy="35" r="26" fill="none" stroke="#BAE6FD" stroke-width="11" stroke-dasharray="61 163" stroke-dashoffset="-10"/>
+          <text x="35" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#0A1A10">47%</text>
+          <text x="35" y="42" text-anchor="middle" font-size="7" fill="#5A7A68">reels</text>
+        </svg>
+        <div class="dleg">
+          <div class="dl"><span class="dot" style="background:#0891B2"></span>Reels<div class="dv">47%</div></div>
+          <div class="dl"><span class="dot" style="background:#BAE6FD"></span>Prevision<div class="dv">53%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5 -->
+<div class="page" id="p5">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;flex-shrink:0">
+    <div class="db"><div class="dh">Objectif et KPIs</div><div class="dd"><strong>3 dimensions :</strong> Couts, Delais, Livrables<br>Ecart Couts = (Reel - Planifie) / Planifie<br>Ecart Delais = (Duree reelle - Planifiee) / Planifiee<br>Score risque = somme des 3 ecarts absolus</div></div>
+    <div class="db"><div class="dh">Seuils alerte</div><div class="dd">15% et plus = Alerte rouge<br>7% a 15% = A surveiller<br>Moins de 7% = Normal<br><br>73 alertes · 27 surveillance · 4 normaux<br>Phase critique : Phase D = +401% couts</div></div>
+    <div class="db"><div class="dh">Mise a jour</div><div class="dd"><div class="stp"><div class="stn">1</div><div class="stt">Remplacer le fichier Excel source</div></div><div class="stp"><div class="stn">2</div><div class="stt">Ouvrir Power BI Desktop</div></div><div class="stp"><div class="stn">3</div><div class="stt">Cliquer Actualiser puis Publier</div></div></div></div>
+    <div class="db"><div class="dh">Modele de donnees</div><div class="dd">Schema en etoile — Projects_plans (faits)<br>Project_Locations, Country_Profiles<br>Project_type : 52 Marketing, 52 IT-CRM<br>Actual_Costs, Actual_Duration, Actual_Delivrable</div></div>
+  </div>
+  <div class="db fill" style="margin-top:0">
+    <div class="dh">Product Strategy Canvas</div>
+    <table class="psc">
+      <thead><tr><th style="width:90px">Utilisateur</th><th>Story 1</th><th>Story 2</th><th>Story 3</th></tr></thead>
+      <tbody>
+        <tr><td><span class="psc-u">DG</span></td><td>Visualiser la performance globale.</td><td>Etre alerte sur les ecarts significatifs.</td><td>Decider arret ou poursuite projet.</td></tr>
+        <tr><td><span class="psc-u">Dir. Regional</span></td><td>Piloter les projets de sa region.</td><td>Etre alerte sur les derives regionales.</td><td>Identifier les pays en difficulte.</td></tr>
+        <tr><td><span class="psc-u">Dir. Pays</span></td><td>Acceder aux indicateurs detailles.</td><td>Identifier les ecarts C/D/L.</td><td>Prioriser les projets en alerte.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+const PROJ=[{"id": 1, "pc": 750000, "ac": 910300, "pd": 469, "ad": 443, "pdl": 76, "adl": 74, "ec": 21.4, "ed": -5.5, "edl": -2.6, "retard": -26, "country": "Equateur", "region": "Amériques", "type": "Marketing", "statut": "Alerte", "score": 29.5}, {"id": 2, "pc": 1500000, "ac": 1292600, "pd": 365, "ad": 303, "pdl": 71, "adl": 63, "ec": -13.8, "ed": -17.0, "edl": -11.3, "retard": -62, "country": "France", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 42.1}, {"id": 3, "pc": 750000, "ac": 933500, "pd": 398, "ad": 463, "pdl": 73, "adl": 68, "ec": 24.5, "ed": 16.3, "edl": -6.8, "retard": 65, "country": "Liban", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 47.6}, {"id": 4, "pc": 750000, "ac": 953100, "pd": 151, "ad": 294, "pdl": 95, "adl": 91, "ec": 27.1, "ed": 94.7, "edl": -4.2, "retard": 143, "country": "Egypte", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 126.0}, {"id": 5, "pc": 750000, "ac": 759800, "pd": 435, "ad": 296, "pdl": 59, "adl": 57, "ec": 1.3, "ed": -32.0, "edl": -3.4, "retard": -139, "country": "Afrique du Sud", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 36.7}, {"id": 6, "pc": 750000, "ac": 892200, "pd": 318, "ad": 387, "pdl": 43, "adl": 40, "ec": 19.0, "ed": 21.7, "edl": -7.0, "retard": 69, "country": "Albanie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 47.7}, {"id": 7, "pc": 1500000, "ac": 1430800, "pd": 445, "ad": 440, "pdl": 98, "adl": 92, "ec": -4.6, "ed": -1.1, "edl": -6.1, "retard": -5, "country": "Hollande", "region": "Europe Occ.", "type": "Marketing", "statut": "Normal", "score": 11.8}, {"id": 8, "pc": 1500000, "ac": 1502700, "pd": 313, "ad": 275, "pdl": 61, "adl": 56, "ec": 0.2, "ed": -12.1, "edl": -8.2, "retard": -38, "country": "Allemagne", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "score": 20.5}, {"id": 9, "pc": 1500000, "ac": 1708000, "pd": 346, "ad": 264, "pdl": 46, "adl": 42, "ec": 13.9, "ed": -23.7, "edl": -8.7, "retard": -82, "country": "Belgique", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 46.3}, {"id": 10, "pc": 500000, "ac": 470600, "pd": 171, "ad": 194, "pdl": 83, "adl": 79, "ec": -5.9, "ed": 13.5, "edl": -4.8, "retard": 23, "country": "Benin", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 24.2}, {"id": 11, "pc": 1500000, "ac": 1672800, "pd": 216, "ad": 322, "pdl": 45, "adl": 42, "ec": 11.5, "ed": 49.1, "edl": -6.7, "retard": 106, "country": "Italie", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 67.3}, {"id": 12, "pc": 750000, "ac": 699700, "pd": 441, "ad": 409, "pdl": 51, "adl": 45, "ec": -6.7, "ed": -7.3, "edl": -11.8, "retard": -32, "country": "Hongrie", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 25.8}, {"id": 13, "pc": 750000, "ac": 671700, "pd": 582, "ad": 495, "pdl": 74, "adl": 67, "ec": -10.4, "ed": -14.9, "edl": -9.5, "retard": -87, "country": "France", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "score": 34.8}, {"id": 14, "pc": 750000, "ac": 931500, "pd": 459, "ad": 341, "pdl": 61, "adl": 59, "ec": 24.2, "ed": -25.7, "edl": -3.3, "retard": -118, "country": "Croatie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 53.2}, {"id": 15, "pc": 500000, "ac": 491500, "pd": 461, "ad": 447, "pdl": 93, "adl": 85, "ec": -1.7, "ed": -3.0, "edl": -8.6, "retard": -14, "country": "Burkina Faso", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 13.3}, {"id": 16, "pc": 500000, "ac": 666900, "pd": 304, "ad": 272, "pdl": 26, "adl": 24, "ec": 33.4, "ed": -10.5, "edl": -7.7, "retard": -32, "country": "Cote d'Ivoire", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 51.6}, {"id": 17, "pc": 1500000, "ac": 1482100, "pd": 496, "ad": 372, "pdl": 79, "adl": 75, "ec": -1.2, "ed": -25.0, "edl": -5.1, "retard": -124, "country": "Espagne", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 31.3}, {"id": 18, "pc": 500000, "ac": 449800, "pd": 420, "ad": 270, "pdl": 65, "adl": 62, "ec": -10.0, "ed": -35.7, "edl": -4.6, "retard": -150, "country": "Gabon", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 50.3}, {"id": 19, "pc": 1500000, "ac": 1497000, "pd": 630, "ad": 609, "pdl": 91, "adl": 82, "ec": -0.2, "ed": -3.3, "edl": -9.9, "retard": -21, "country": "Republique Chèque", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 13.4}, {"id": 20, "pc": 750000, "ac": 904800, "pd": 416, "ad": 429, "pdl": 85, "adl": 79, "ec": 20.6, "ed": 3.1, "edl": -7.1, "retard": 13, "country": "Colombie", "region": "Amériques", "type": "Marketing", "statut": "Alerte", "score": 30.8}, {"id": 21, "pc": 750000, "ac": 765900, "pd": 437, "ad": 375, "pdl": 64, "adl": 59, "ec": 2.1, "ed": -14.2, "edl": -7.8, "retard": -62, "country": "Estonie", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 24.1}, {"id": 22, "pc": 750000, "ac": 797200, "pd": 631, "ad": 541, "pdl": 42, "adl": 40, "ec": 6.3, "ed": -14.3, "edl": -4.8, "retard": -90, "country": "Bresil", "region": "Amériques", "type": "Marketing", "statut": "Surveiller", "score": 25.4}, {"id": 23, "pc": 1500000, "ac": 1897500, "pd": 248, "ad": 213, "pdl": 56, "adl": 52, "ec": 26.5, "ed": -14.1, "edl": -7.1, "retard": -35, "country": "Suisse", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 47.7}, {"id": 24, "pc": 750000, "ac": 739900, "pd": 611, "ad": 438, "pdl": 78, "adl": 72, "ec": -1.3, "ed": -28.3, "edl": -7.7, "retard": -173, "country": "Ukraine", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 37.3}, {"id": 25, "pc": 500000, "ac": 554800, "pd": 415, "ad": 365, "pdl": 35, "adl": 30, "ec": 11.0, "ed": -12.0, "edl": -14.3, "retard": -50, "country": "Togo", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 37.3}, {"id": 26, "pc": 1500000, "ac": 1593400, "pd": 235, "ad": 253, "pdl": 67, "adl": 59, "ec": 6.2, "ed": 7.7, "edl": -11.9, "retard": 18, "country": "Allemagne", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "score": 25.8}, {"id": 27, "pc": 750000, "ac": 736500, "pd": 441, "ad": 446, "pdl": 73, "adl": 70, "ec": -1.8, "ed": 1.1, "edl": -4.1, "retard": 5, "country": "La Reunion", "region": "Europe C/E", "type": "Marketing", "statut": "Normal", "score": 7.0}, {"id": 28, "pc": 1500000, "ac": 1501900, "pd": 334, "ad": 314, "pdl": 70, "adl": 65, "ec": 0.1, "ed": -6.0, "edl": -7.1, "retard": -20, "country": "Russie", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 13.2}, {"id": 29, "pc": 750000, "ac": 897100, "pd": 209, "ad": 176, "pdl": 33, "adl": 30, "ec": 19.6, "ed": -15.8, "edl": -9.1, "retard": -33, "country": "Belgique", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 44.5}, {"id": 30, "pc": 1500000, "ac": 1536800, "pd": 513, "ad": 409, "pdl": 62, "adl": 61, "ec": 2.5, "ed": -20.3, "edl": -1.6, "retard": -104, "country": "Canada", "region": "Amériques", "type": "Marketing", "statut": "Alerte", "score": 24.4}, {"id": 31, "pc": 1500000, "ac": 1576300, "pd": 282, "ad": 189, "pdl": 64, "adl": 61, "ec": 5.1, "ed": -33.0, "edl": -4.7, "retard": -93, "country": "Norvege", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 42.8}, {"id": 32, "pc": 750000, "ac": 982400, "pd": 351, "ad": 210, "pdl": 49, "adl": 45, "ec": 31.0, "ed": -40.2, "edl": -8.2, "retard": -141, "country": "Turquie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 79.4}, {"id": 33, "pc": 750000, "ac": 684900, "pd": 306, "ad": 297, "pdl": 48, "adl": 45, "ec": -8.7, "ed": -2.9, "edl": -6.2, "retard": -9, "country": "Malte", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 17.8}, {"id": 34, "pc": 1500000, "ac": 1605500, "pd": 608, "ad": 397, "pdl": 74, "adl": 68, "ec": 7.0, "ed": -34.7, "edl": -8.1, "retard": -211, "country": "Israel", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 49.8}, {"id": 35, "pc": 1500000, "ac": 1600100, "pd": 353, "ad": 325, "pdl": 81, "adl": 75, "ec": 6.7, "ed": -7.9, "edl": -7.4, "retard": -28, "country": "Norvege", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "score": 22.0}, {"id": 36, "pc": 750000, "ac": 822200, "pd": 359, "ad": 319, "pdl": 62, "adl": 57, "ec": 9.6, "ed": -11.1, "edl": -8.1, "retard": -40, "country": "Portugal", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "score": 28.8}, {"id": 37, "pc": 750000, "ac": 930700, "pd": 385, "ad": 257, "pdl": 58, "adl": 55, "ec": 24.1, "ed": -33.2, "edl": -5.2, "retard": -128, "country": "Pologne", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 62.5}, {"id": 38, "pc": 750000, "ac": 669900, "pd": 401, "ad": 349, "pdl": 69, "adl": 60, "ec": -10.7, "ed": -13.0, "edl": -13.0, "retard": -52, "country": "Grece", "region": "Europe Occ.", "type": "Marketing", "statut": "Surveiller", "score": 36.7}, {"id": 39, "pc": 1500000, "ac": 1766200, "pd": 394, "ad": 348, "pdl": 70, "adl": 64, "ec": 17.7, "ed": -11.7, "edl": -8.6, "retard": -46, "country": "Danemark", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 38.0}, {"id": 40, "pc": 500000, "ac": 542400, "pd": 462, "ad": 463, "pdl": 80, "adl": 77, "ec": 8.5, "ed": 0.2, "edl": -3.8, "retard": 1, "country": "Senegal", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 12.5}, {"id": 41, "pc": 1500000, "ac": 1736000, "pd": 356, "ad": 272, "pdl": 90, "adl": 82, "ec": 15.7, "ed": -23.6, "edl": -8.9, "retard": -84, "country": "Slovaquie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 48.2}, {"id": 42, "pc": 750000, "ac": 972900, "pd": 576, "ad": 260, "pdl": 73, "adl": 67, "ec": 29.7, "ed": -54.9, "edl": -8.2, "retard": -316, "country": "Lituanie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 92.8}, {"id": 43, "pc": 1500000, "ac": 1845000, "pd": 423, "ad": 280, "pdl": 34, "adl": 33, "ec": 23.0, "ed": -33.8, "edl": -2.9, "retard": -143, "country": "Luxembourg", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 59.7}, {"id": 44, "pc": 750000, "ac": 751700, "pd": 427, "ad": 440, "pdl": 47, "adl": 45, "ec": 0.2, "ed": 3.0, "edl": -4.3, "retard": 13, "country": "Jordanie", "region": "Europe C/E", "type": "Marketing", "statut": "Normal", "score": 7.5}, {"id": 45, "pc": 500000, "ac": 626000, "pd": 537, "ad": 359, "pdl": 79, "adl": 72, "ec": 25.2, "ed": -33.1, "edl": -8.9, "retard": -178, "country": "Gambie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 67.2}, {"id": 46, "pc": 750000, "ac": 1009100, "pd": 454, "ad": 225, "pdl": 74, "adl": 71, "ec": 34.5, "ed": -50.4, "edl": -4.1, "retard": -229, "country": "Macedoine", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 89.0}, {"id": 47, "pc": 500000, "ac": 453700, "pd": 345, "ad": 347, "pdl": 94, "adl": 87, "ec": -9.3, "ed": 0.6, "edl": -7.4, "retard": 2, "country": "Niger", "region": "Europe C/E", "type": "Marketing", "statut": "Surveiller", "score": 17.3}, {"id": 48, "pc": 1500000, "ac": 1617900, "pd": 521, "ad": 369, "pdl": 94, "adl": 89, "ec": 7.9, "ed": -29.2, "edl": -5.3, "retard": -152, "country": "Slovenie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 42.4}, {"id": 49, "pc": 750000, "ac": 840100, "pd": 386, "ad": 167, "pdl": 114, "adl": 107, "ec": 12.0, "ed": -56.7, "edl": -6.1, "retard": -219, "country": "Ile Maurice", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 74.8}, {"id": 50, "pc": 750000, "ac": 944800, "pd": 544, "ad": 276, "pdl": 66, "adl": 62, "ec": 26.0, "ed": -49.3, "edl": -6.1, "retard": -268, "country": "Serbie", "region": "Europe C/E", "type": "Marketing", "statut": "Alerte", "score": 81.4}, {"id": 51, "pc": 1500000, "ac": 1678400, "pd": 374, "ad": 312, "pdl": 53, "adl": 46, "ec": 11.9, "ed": -16.6, "edl": -13.2, "retard": -62, "country": "Suede", "region": "Europe Occ.", "type": "Marketing", "statut": "Alerte", "score": 41.7}, {"id": 52, "pc": 161200, "ac": 102900, "pd": 540, "ad": 466, "pdl": 110, "adl": 100, "ec": -36.2, "ed": -13.7, "edl": -9.1, "retard": -74, "country": "France", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 59.0}, {"id": 53, "pc": 126200, "ac": 94700, "pd": 388, "ad": 452, "pdl": 122, "adl": 114, "ec": -25.0, "ed": 16.5, "edl": -6.6, "retard": 64, "country": "Belgique", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 48.1}, {"id": 54, "pc": 96200, "ac": 102900, "pd": 675, "ad": 791, "pdl": 93, "adl": 82, "ec": 7.0, "ed": 17.2, "edl": -11.8, "retard": 116, "country": "Hollande", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 36.0}, {"id": 55, "pc": 104200, "ac": 90900, "pd": 550, "ad": 399, "pdl": 84, "adl": 78, "ec": -12.8, "ed": -27.5, "edl": -7.1, "retard": -151, "country": "Luxembourg", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 47.4}, {"id": 56, "pc": 79200, "ac": 78800, "pd": 592, "ad": 589, "pdl": 70, "adl": 63, "ec": -0.5, "ed": -0.5, "edl": -10.0, "retard": -3, "country": "Italie", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Surveiller", "score": 11.0}, {"id": 57, "pc": 78200, "ac": 103100, "pd": 691, "ad": 596, "pdl": 73, "adl": 68, "ec": 31.8, "ed": -13.7, "edl": -6.8, "retard": -95, "country": "Japon", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 52.3}, {"id": 58, "pc": 119200, "ac": 115300, "pd": 665, "ad": 587, "pdl": 117, "adl": 106, "ec": -3.3, "ed": -11.7, "edl": -9.4, "retard": -78, "country": "Espagne", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Surveiller", "score": 24.4}, {"id": 59, "pc": 82200, "ac": 84700, "pd": 315, "ad": 366, "pdl": 92, "adl": 87, "ec": 3.0, "ed": 16.2, "edl": -5.4, "retard": 51, "country": "Hongrie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 24.6}, {"id": 60, "pc": 66200, "ac": 68900, "pd": 701, "ad": 651, "pdl": 107, "adl": 101, "ec": 4.1, "ed": -7.1, "edl": -5.6, "retard": -50, "country": "Pologne", "region": "Europe C/E", "type": "IT-CRM", "statut": "Surveiller", "score": 16.8}, {"id": 61, "pc": 93200, "ac": 108300, "pd": 478, "ad": 495, "pdl": 99, "adl": 93, "ec": 16.2, "ed": 3.6, "edl": -6.1, "retard": 17, "country": "Republique Chèque", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 25.9}, {"id": 62, "pc": 100200, "ac": 113200, "pd": 431, "ad": 364, "pdl": 63, "adl": 58, "ec": 13.0, "ed": -15.5, "edl": -7.9, "retard": -67, "country": "Slovaquie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 36.4}, {"id": 63, "pc": 78200, "ac": 120700, "pd": 582, "ad": 571, "pdl": 83, "adl": 77, "ec": 54.3, "ed": -1.9, "edl": -7.2, "retard": -11, "country": "Allemagne", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 63.4}, {"id": 64, "pc": 90200, "ac": 101000, "pd": 812, "ad": 596, "pdl": 131, "adl": 120, "ec": 12.0, "ed": -26.6, "edl": -8.4, "retard": -216, "country": "Serbie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 47.0}, {"id": 65, "pc": 48200, "ac": 73100, "pd": 442, "ad": 478, "pdl": 105, "adl": 98, "ec": 51.7, "ed": 8.1, "edl": -6.7, "retard": 36, "country": "Croatie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 66.5}, {"id": 66, "pc": 90200, "ac": 107900, "pd": 718, "ad": 511, "pdl": 135, "adl": 120, "ec": 19.6, "ed": -28.8, "edl": -11.1, "retard": -207, "country": "Slovenie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 59.5}, {"id": 67, "pc": 98200, "ac": 91800, "pd": 581, "ad": 421, "pdl": 123, "adl": 117, "ec": -6.5, "ed": -27.5, "edl": -4.9, "retard": -160, "country": "Macedoine", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 38.9}, {"id": 68, "pc": 59200, "ac": 60100, "pd": 708, "ad": 598, "pdl": 56, "adl": 53, "ec": 1.5, "ed": -15.5, "edl": -5.4, "retard": -110, "country": "Albanie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 22.4}, {"id": 69, "pc": 125200, "ac": 118100, "pd": 753, "ad": 480, "pdl": 118, "adl": 113, "ec": -5.7, "ed": -36.3, "edl": -4.2, "retard": -273, "country": "Chine", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 46.2}, {"id": 70, "pc": 106200, "ac": 75800, "pd": 585, "ad": 523, "pdl": 82, "adl": 79, "ec": -28.6, "ed": -10.6, "edl": -3.7, "retard": -62, "country": "Malte", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 42.9}, {"id": 71, "pc": 69200, "ac": 79700, "pd": 655, "ad": 636, "pdl": 126, "adl": 112, "ec": 15.2, "ed": -2.9, "edl": -11.1, "retard": -19, "country": "Turquie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 29.2}, {"id": 72, "pc": 89200, "ac": 66800, "pd": 648, "ad": 561, "pdl": 120, "adl": 110, "ec": -25.1, "ed": -13.4, "edl": -8.3, "retard": -87, "country": "Grece", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 46.8}, {"id": 73, "pc": 63200, "ac": 94800, "pd": 410, "ad": 364, "pdl": 70, "adl": 64, "ec": 50.0, "ed": -11.2, "edl": -8.6, "retard": -46, "country": "Portugal", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 69.8}, {"id": 74, "pc": 74200, "ac": 74100, "pd": 941, "ad": 710, "pdl": 96, "adl": 90, "ec": -0.1, "ed": -24.5, "edl": -6.2, "retard": -231, "country": "Ukraine", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 30.8}, {"id": 75, "pc": 149200, "ac": 108000, "pd": 545, "ad": 435, "pdl": 125, "adl": 113, "ec": -27.6, "ed": -20.2, "edl": -9.6, "retard": -110, "country": "Russie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 57.4}, {"id": 76, "pc": 76200, "ac": 87200, "pd": 555, "ad": 454, "pdl": 109, "adl": 103, "ec": 14.4, "ed": -18.2, "edl": -5.5, "retard": -101, "country": "Bielorussie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 38.1}, {"id": 77, "pc": 56200, "ac": 62700, "pd": 787, "ad": 654, "pdl": 92, "adl": 86, "ec": 11.6, "ed": -16.9, "edl": -6.5, "retard": -133, "country": "Lituanie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 35.0}, {"id": 78, "pc": 60200, "ac": 67700, "pd": 459, "ad": 521, "pdl": 98, "adl": 85, "ec": 12.5, "ed": 13.5, "edl": -13.3, "retard": 62, "country": "Estonie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Surveiller", "score": 39.3}, {"id": 79, "pc": 112200, "ac": 111900, "pd": 854, "ad": 611, "pdl": 105, "adl": 66, "ec": -0.3, "ed": -28.5, "edl": -37.1, "retard": -243, "country": "Suede", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 65.9}, {"id": 80, "pc": 117200, "ac": 96800, "pd": 945, "ad": 696, "pdl": 82, "adl": 48, "ec": -17.4, "ed": -26.3, "edl": -41.5, "retard": -249, "country": "Danemark", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 85.2}, {"id": 81, "pc": 169200, "ac": 118100, "pd": 568, "ad": 502, "pdl": 121, "adl": 75, "ec": -30.2, "ed": -11.6, "edl": -38.0, "retard": -66, "country": "Norvege", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 79.8}, {"id": 82, "pc": 112200, "ac": 106800, "pd": 611, "ad": 484, "pdl": 135, "adl": 83, "ec": -4.8, "ed": -20.8, "edl": -38.5, "retard": -127, "country": "Suisse", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 64.1}, {"id": 83, "pc": 77400, "ac": 52900, "pd": 717, "ad": 590, "pdl": 117, "adl": 72, "ec": -31.7, "ed": -17.7, "edl": -38.5, "retard": -127, "country": "Cote d'Ivoire", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 87.9}, {"id": 84, "pc": 74400, "ac": 82600, "pd": 496, "ad": 453, "pdl": 84, "adl": 49, "ec": 11.0, "ed": -8.7, "edl": -41.7, "retard": -43, "country": "Chine", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 61.4}, {"id": 85, "pc": 93200, "ac": 87100, "pd": 723, "ad": 642, "pdl": 132, "adl": 84, "ec": -6.5, "ed": -11.2, "edl": -36.4, "retard": -81, "country": "Afrique du Sud", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 54.1}, {"id": 86, "pc": 123400, "ac": 79200, "pd": 645, "ad": 576, "pdl": 75, "adl": 49, "ec": -35.8, "ed": -10.7, "edl": -34.7, "retard": -69, "country": "France", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 81.2}, {"id": 87, "pc": 84400, "ac": 65000, "pd": 668, "ad": 649, "pdl": 79, "adl": 67, "ec": -23.0, "ed": -2.8, "edl": -15.2, "retard": -19, "country": "Serbie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 41.0}, {"id": 88, "pc": 76400, "ac": 91600, "pd": 505, "ad": 609, "pdl": 111, "adl": 99, "ec": 19.9, "ed": 20.6, "edl": -10.8, "retard": 104, "country": "Turquie", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 51.3}, {"id": 89, "pc": 138400, "ac": 62100, "pd": 537, "ad": 511, "pdl": 98, "adl": 89, "ec": -55.1, "ed": -4.8, "edl": -9.2, "retard": -26, "country": "Grece", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Alerte", "score": 69.1}, {"id": 90, "pc": 59400, "ac": 61800, "pd": 409, "ad": 437, "pdl": 92, "adl": 85, "ec": 4.0, "ed": 6.8, "edl": -7.6, "retard": 28, "country": "Afrique du Sud", "region": "Europe C/E", "type": "IT-CRM", "statut": "Surveiller", "score": 18.4}, {"id": 91, "pc": 104400, "ac": 68600, "pd": 617, "ad": 530, "pdl": 126, "adl": 119, "ec": -34.3, "ed": -14.1, "edl": -5.6, "retard": -87, "country": "Canada", "region": "Amériques", "type": "IT-CRM", "statut": "Alerte", "score": 54.0}, {"id": 92, "pc": 65200, "ac": 58500, "pd": 668, "ad": 670, "pdl": 107, "adl": 93, "ec": -10.3, "ed": 0.3, "edl": -13.1, "retard": 2, "country": "Pologne", "region": "Europe C/E", "type": "IT-CRM", "statut": "Surveiller", "score": 23.7}, {"id": 93, "pc": 74200, "ac": 81700, "pd": 565, "ad": 536, "pdl": 97, "adl": 92, "ec": 10.1, "ed": -5.1, "edl": -5.2, "retard": -29, "country": "Danemark", "region": "Europe Occ.", "type": "IT-CRM", "statut": "Surveiller", "score": 20.4}, {"id": 94, "pc": 91200, "ac": 106900, "pd": 508, "ad": 529, "pdl": 105, "adl": 98, "ec": 17.2, "ed": 4.1, "edl": -6.7, "retard": 21, "country": "Israel", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 28.0}, {"id": 95, "pc": 109200, "ac": 74000, "pd": 628, "ad": 505, "pdl": 133, "adl": 127, "ec": -32.2, "ed": -19.6, "edl": -4.5, "retard": -123, "country": "Japon", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 56.3}, {"id": 96, "pc": 146200, "ac": 59700, "pd": 586, "ad": 406, "pdl": 113, "adl": 106, "ec": -59.2, "ed": -30.7, "edl": -6.2, "retard": -180, "country": "Chine", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 96.1}, {"id": 97, "pc": 70200, "ac": 80600, "pd": 580, "ad": 587, "pdl": 81, "adl": 72, "ec": 14.8, "ed": 1.2, "edl": -11.1, "retard": 7, "country": "Japon", "region": "APAC", "type": "IT-CRM", "statut": "Surveiller", "score": 27.1}, {"id": 98, "pc": 55200, "ac": 87800, "pd": 585, "ad": 503, "pdl": 112, "adl": 104, "ec": 59.1, "ed": -14.0, "edl": -7.1, "retard": -82, "country": "Japon", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 80.2}, {"id": 99, "pc": 76200, "ac": 77600, "pd": 496, "ad": 431, "pdl": 107, "adl": 96, "ec": 1.8, "ed": -13.1, "edl": -10.3, "retard": -65, "country": "Indonesie", "region": "APAC", "type": "IT-CRM", "statut": "Surveiller", "score": 25.2}, {"id": 100, "pc": 91200, "ac": 64800, "pd": 606, "ad": 615, "pdl": 95, "adl": 86, "ec": -28.9, "ed": 1.5, "edl": -9.5, "retard": 9, "country": "Malaysie", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 39.9}, {"id": 101, "pc": 121200, "ac": 98100, "pd": 539, "ad": 496, "pdl": 96, "adl": 87, "ec": -19.1, "ed": -8.0, "edl": -9.4, "retard": -43, "country": "Chine", "region": "APAC", "type": "IT-CRM", "statut": "Alerte", "score": 36.5}, {"id": 102, "pc": 85200, "ac": 78800, "pd": 612, "ad": 438, "pdl": 70, "adl": 64, "ec": -7.5, "ed": -28.4, "edl": -8.6, "retard": -174, "country": "Ile Maurice", "region": "Europe C/E", "type": "IT-CRM", "statut": "Alerte", "score": 44.5}, {"id": 103, "pc": 91200, "ac": 89500, "pd": 459, "ad": 400, "pdl": 66, "adl": 62, "ec": -1.9, "ed": -12.9, "edl": -6.1, "retard": -59, "country": "La Reunion", "region": "Europe C/E", "type": "IT-CRM", "statut": "Surveiller", "score": 20.9}, {"id": 104, "pc": 750000, "ac": 706500, "pd": 634, "ad": 650, "pdl": 69, "adl": 69, "ec": -5.8, "ed": 2.5, "edl": 0.0, "retard": 16, "country": "Bielorussie", "region": "Europe C/E", "type": "Marketing", "statut": "Normal", "score": 8.3}];
+const PH=[{"name": "Phase 1 - Planning", "ec": 9.5, "ed": -15.5, "edl": -6.1, "score": 31.1}, {"name": "Phase 2 - Initiation", "ec": 9.3, "ed": -22.3, "edl": -8.4, "score": 40.0}, {"name": "Phase 3 - Implementation", "ec": 9.9, "ed": -12.4, "edl": -6.7, "score": 29.0}, {"name": "Phase 4 - Manufacturing", "ec": 8.1, "ed": -13.1, "edl": -6.1, "score": 27.3}, {"name": "Phase A - Initiation", "ec": 9.6, "ed": -14.7, "edl": -11.7, "score": 36.0}, {"name": "Phase B - Preparation", "ec": 19.0, "ed": -13.5, "edl": -12.2, "score": 44.7}, {"name": "Phase C - Development", "ec": 10.7, "ed": -13.9, "edl": -14.6, "score": 39.2}, {"name": "Phase D - Testing", "ec": 401.3, "ed": -4.0, "edl": -14.5, "score": 419.8}, {"name": "Phase E - Deployment", "ec": -40.5, "ed": -11.2, "edl": -12.3, "score": 64.0}, {"name": "Phase F - Post-deployment", "ec": 11.3, "ed": -12.1, "edl": -12.2, "score": 35.6}];
+const S={ind:'all',reg:'',type:'',stat:''};
+let sCol='id',sDir=1;
+
+const HINTS={all:'3 dimensions affichees',ec:'Focus sur les Couts',ed:'Focus sur les Delais',edl:'Focus sur les Livrables'};
+const IND_COL={ec:'#D97706',ed:'#7C3AED',edl:'#0891B2'};
+
+function flt(){return PROJ.filter(p=>(!S.reg||p.region===S.reg)&&(!S.type||p.type===S.type)&&(!S.stat||p.statut===S.stat));}
+function fm(v){return v>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'K';}
+function fp(v){return (v>0?'+':'')+v.toFixed(1)+'%';}
+function clHex(v){const a=Math.abs(v);return a>=15?'#DC2626':a>=7?'#D97706':'#16A34A';}
+function pc(v){const a=Math.abs(v);return a>=15?'pr':a>=7?'po':'pg';}
+function se(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function sa(id,a,v){const e=document.getElementById(id);if(e)e.setAttribute(a,v);}
+
+// Couleurs par valeur de filtre
+const REG_COLORS={'Europe C/E':'#6D28D9','Europe Occ.':'#0369A1','APAC':'#B45309','Ameriques':'#0F766E'};
+const STAT_COLORS={'Alerte':'#DC2626','Surveiller':'#D97706','Normal':'#16A34A'};
+const TYPE_COLORS={'Marketing':'#0F766E','IT-CRM':'#1D4ED8'};
+
+function updateFocus(){
+  // ── Indicateur KPI cards ──
+  ['ec','ed','edl'].forEach(k=>{
+    const card=document.getElementById('kc-'+k);
+    if(!card)return;
+    card.classList.remove('dim','active-ec','active-ed','active-edl');
+    if(S.ind==='all'){}
+    else if(S.ind===k){card.classList.add('active-'+k);}
+    else{card.classList.add('dim');}
+  });
+  se('fhint',HINTS[S.ind]);
+  ['ec','ed','edl'].forEach(k=>{
+    const op=S.ind==='all'||S.ind===k?'1':'0.3';
+    const th=document.getElementById('th-'+k);if(th)th.style.opacity=op;
+    const pt=document.getElementById('pth-'+k);if(pt)pt.style.opacity=op;
+  });
+  const rt=document.getElementById('reg-title');
+  if(rt)rt.textContent=S.ind==='all'?'Ecarts par region — Couts / Delais / Livrables':'Ecart '+{ec:'Couts',ed:'Delais',edl:'Livrables'}[S.ind]+' par region';
+  const pbt=document.getElementById('ph-b3-title');
+  if(pbt)pbt.textContent=S.ind==='all'?'Triple ecart par phase':'Ecart '+{ec:'Couts',ed:'Delais',edl:'Livrables'}[S.ind]+' par phase';
+
+  // ── Badge filtre actif dans le topbar alert ──
+  const ta = document.getElementById('top-alert');
+  if(ta){
+    const parts = [];
+    if(S.type) parts.push(S.type);
+    if(S.reg)  parts.push(S.reg);
+    if(S.stat) parts.push(S.stat);
+    // couleur badge selon filtre dominant
+    let badgeCol = null;
+    if(S.stat) badgeCol = STAT_COLORS[S.stat];
+    else if(S.reg) badgeCol = REG_COLORS[S.reg];
+    else if(S.type) badgeCol = TYPE_COLORS[S.type];
+    if(badgeCol){
+      ta.style.background = badgeCol+'28';
+      ta.style.borderColor = badgeCol+'60';
+      ta.style.color = badgeCol;
+    } else {
+      ta.style.background = '';
+      ta.style.borderColor = '';
+      ta.style.color = '';
+    }
+  }
+
+  // ── Donut statuts : highlight segment actif ──
+  if(S.stat){
+    const statMap={'Alerte':'da','Surveiller':'ds','Normal':'dn'};
+    ['da','ds','dn'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      const isActive = statMap[S.stat]===id;
+      el.style.strokeWidth = isActive ? '14' : '8';
+      el.style.opacity = isActive ? '1' : '0.3';
+    });
+  } else {
+    ['da','ds','dn'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.style.strokeWidth='11';el.style.opacity='1';}
+    });
+  }
+}
+
+function renderB3(el,items){
+  if(!el||!items.length)return;
+  const keys=S.ind==='all'?['ec','ed','edl']:[S.ind];
+  const maxV=Math.max(...items.flatMap(i=>keys.map(k=>Math.abs(i[k]||0))),1);
+  el.innerHTML=items.map(item=>`<div class="b3-item">
+    <div class="b3-lbl">${item.label||item.name}</div>
+    ${keys.map(k=>`<div class="b3-line">
+      <span class="b3-key" style="color:${IND_COL[k]}">${k==='ec'?'C':k==='ed'?'D':'L'}</span>
+      <div class="b3-track"><div class="b3-fill" style="width:${(Math.abs(item[k]||0)/maxV*100).toFixed(1)}%;background:${clHex(item[k]||0)}"><span>${fp(item[k]||0)}</span></div></div>
+      <span class="b3-num" style="color:${clHex(item[k]||0)}">${fp(item[k]||0)}</span>
+    </div>`).join('')}
+  </div>`).join('');
+}
+
+function setBadge(id,v){
+  const e=document.getElementById(id);if(!e)return;
+  const a=Math.abs(v);
+  if(a>=15){e.style.background='#FEE2E2';e.style.color='#DC2626';e.textContent='Alerte';}
+  else if(a>=7){e.style.background='#FEF3C7';e.style.color='#D97706';e.textContent='Surveiller';}
+  else{e.style.background='#DCFCE7';e.style.color='#16A34A';e.textContent='Normal';}
+}
+
+function r1(d){
+  const n=d.length||1;
+  const pc_=d.reduce((s,p)=>s+p.pc,0),ac_=d.reduce((s,p)=>s+p.ac,0);
+  const pdl_=d.reduce((s,p)=>s+p.pdl,0),adl_=d.reduce((s,p)=>s+p.adl,0);
+  const ec_=d.reduce((s,p)=>s+p.ec,0)/n;
+  const ed_=d.reduce((s,p)=>s+p.ed,0)/n;
+  const edl_=d.reduce((s,p)=>s+p.edl,0)/n;
+  const nA=d.filter(p=>p.statut==='Alerte').length;
+  const nS=d.filter(p=>p.statut==='Surveiller').length;
+  const nN=d.filter(p=>p.statut==='Normal').length;
+  const nR=d.filter(p=>p.retard>0).length;
+  const nAv=d.filter(p=>p.retard<0).length;
+  const mR=d.filter(p=>p.retard>0).reduce((m,p)=>Math.max(m,p.retard),0);
+  const sc=d.reduce((s,p)=>s+p.score,0)/n;
+
+  se('k-ec',fp(ec_));se('k-pc',fm(pc_)+'E');se('k-ac',fm(ac_)+'E');
+  se('k-diff',(ac_-pc_>=0?'+':'')+fm(ac_-pc_)+'E');
+  const kb=document.getElementById('k-pbar');if(kb)kb.style.width=Math.min(pc_>0?Math.abs((ac_-pc_)/pc_)*300:0,100)+'%';
+  setBadge('k-ec-badge',ec_);
+
+  se('k-ed',fp(ed_));se('k-nret',nR+'p.');se('k-nav',nAv+'p.');se('k-maxret','+'+mR+'j');
+  const kd=document.getElementById('k-dbar');if(kd)kd.style.width=Math.min(nR/n*300,100)+'%';
+  setBadge('k-ed-badge',ed_);
+
+  se('k-edl',fp(edl_));se('k-pdl',pdl_.toFixed(0)+'K');se('k-adl',adl_.toFixed(0)+'K');
+  se('k-ldiff',((adl_-pdl_)>=0?'+':'')+(adl_-pdl_).toFixed(0)+'K');
+  const kl=document.getElementById('k-lbar');if(kl)kl.style.width=Math.min(pdl_>0?Math.abs((adl_-pdl_)/pdl_)*300:0,100)+'%';
+  setBadge('k-edl-badge',edl_);
+
+  const C=2*Math.PI*26;
+  const dA=nA/n*C,dS=nS/n*C,dN=nN/n*C;
+  sa('da','stroke-dasharray',dA+' '+C);sa('da','stroke-dashoffset','41');
+  sa('ds','stroke-dasharray',dS+' '+C);sa('ds','stroke-dashoffset',41-dA);
+  sa('dn','stroke-dasharray',dN+' '+C);sa('dn','stroke-dashoffset',41-dA-dS);
+  se('dt',n);se('dla',nA+' ('+(nA/n*100).toFixed(0)+'%)');
+  se('dls',nS+' ('+(nS/n*100).toFixed(0)+'%)');
+  se('dln',nN+' ('+(nN/n*100).toFixed(0)+'%)');
+  se('k-score',sc.toFixed(1)+' pts');
+  se('top-sub',n+' projets');se('top-alert',nA+' alertes');
+
+  const REGS=['Europe C/E','Europe Occ.','APAC','Ameriques'];
+  const regData = REGS.map(r=>{
+    const rp=d.filter(p=>p.region===r);if(!rp.length)return null;
+    return{label:r,ec:rp.reduce((s,p)=>s+p.ec,0)/rp.length,ed:rp.reduce((s,p)=>s+p.ed,0)/rp.length,edl:rp.reduce((s,p)=>s+p.edl,0)/rp.length};
+  }).filter(Boolean);
+  renderChartReg(regData);
+
+  const mk=d.filter(p=>p.type==='Marketing'),it=d.filter(p=>p.type==='IT-CRM');
+  const avg=(a,k)=>a.length>0?a.reduce((s,p)=>s+p[k],0)/a.length:0;
+  renderB3(document.getElementById('type-b3'),[
+    {label:'Marketing ('+mk.length+')',ec:avg(mk,'ec'),ed:avg(mk,'ed'),edl:avg(mk,'edl')},
+    {label:'IT-CRM ('+it.length+')',ec:avg(it,'ec'),ed:avg(it,'ed'),edl:avg(it,'edl')}
+  ]);
+
+  const top5=d.filter(p=>p.retard>0).sort((a,b)=>b.retard-a.retard).slice(0,3);
+  const mx5=top5[0]?.retard||1;
+  const t5=document.getElementById('top5');
+  if(t5)t5.innerHTML=top5.length?top5.map((p,i)=>{
+    const c=i<2?'#DC2626':i<4?'#D97706':'#5A7A68';
+    const indVal=S.ind==='all'?null:p[S.ind];
+    return `<div class="t5-item">
+      <div class="t5-rank" style="background:${c}">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div class="t5-name">Proj.${p.id} — ${p.region}</div>
+        <div class="t5-meta">${S.ind==='all'?`<span class="pill ${pc(p.ec)}">${fp(p.ec)} C</span> <span class="pill ${pc(p.ed)}">${fp(p.ed)} D</span>`:`<span class="pill ${pc(indVal)}">${fp(indVal)}</span>`}</div>
+        <div class="t5-bar"><div class="t5-bfill" style="width:${Math.round(p.retard/mx5*100)}%;background:${c}"></div></div>
+      </div>
+      <span class="t5-val" style="color:${c}">+${p.retard}j</span>
+    </div>`;
+  }).join(''):'<div style="text-align:center;padding:20px;color:var(--t4);font-size:11px">Aucun retard</div>';
+
+  updateFocus();
+}
+
+function renderTable(){
+  const d=flt();
+  const q=(document.getElementById('srch')?.value||'').toLowerCase();
+  let rows=d.filter(p=>!q||String(p.id).includes(q)||p.region.toLowerCase().includes(q)||p.country.toLowerCase().includes(q)||p.type.toLowerCase().includes(q));
+  rows.sort((a,b)=>{let va=a[sCol],vb=b[sCol];if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}return va<vb?-sDir:va>vb?sDir:0;});
+  const n=rows.length||1;
+  se('t-tot',rows.length);se('t-al',rows.filter(p=>p.statut==='Alerte').length);
+  se('t-rt',rows.filter(p=>p.retard>0).length);
+  se('t-ec',fp(rows.reduce((s,p)=>s+p.ec,0)/n));
+  se('t-ed',fp(rows.reduce((s,p)=>s+p.ed,0)/n));
+  se('t-edl',fp(rows.reduce((s,p)=>s+p.edl,0)/n));
+  se('sc',rows.length+' res.');
+  const opEC=S.ind==='all'||S.ind==='ec'?1:.25;
+  const opED=S.ind==='all'||S.ind==='ed'?1:.25;
+  const opEDL=S.ind==='all'||S.ind==='edl'?1:.25;
+  const tb=document.getElementById('ptbody');
+  if(tb)tb.innerHTML=rows.map(p=>`<tr class="${p.statut==='Alerte'?'ra':''}">
+    <td style="font-weight:700;color:var(--brand2)">P${p.id}</td>
+    <td style="font-weight:${S.reg===p.region?'700':'400'};color:${S.reg&&S.reg===p.region?REG_COLORS[S.reg]||'var(--t1)':'var(--t1)'};opacity:${S.reg&&S.reg!==p.region?'0.3':'1'};transition:all .2s">${p.region}</td>
+    <td style="color:var(--t3)">${p.country}</td>
+    <td style="opacity:${S.type&&S.type!==p.type?'0.25':'1'};transition:opacity .2s"><span class="pill ${p.type==='Marketing'?'pg':'pb'}" style="${S.type===p.type?'box-shadow:0 0 0 2px currentColor;':'font-weight:600;'}">${p.type}</span></td>
+    <td style="color:var(--t2)">${fm(p.pc)}E</td>
+    <td style="color:var(--t2)">${fm(p.ac)}E</td>
+    <td style="opacity:${opEC}"><span class="pill ${pc(p.ec)}">${fp(p.ec)}</span></td>
+    <td style="opacity:${opED}"><span class="pill ${pc(p.ed)}">${fp(p.ed)}</span></td>
+    <td style="opacity:${opEDL}"><span class="pill ${pc(p.edl)}">${fp(p.edl)}</span></td>
+    <td style="font-weight:600;color:${p.retard>60?'#DC2626':p.retard>30?'#D97706':p.retard>0?'#92400E':'#16A34A'}">${p.retard>0?'+'+p.retard:p.retard}j</td>
+    <td><div style="display:flex;align-items:center;gap:5px"><div style="width:${Math.min(p.score/5,60)}px;height:4px;border-radius:2px;background:${p.score>40?'#DC2626':p.score>20?'#D97706':'#16A34A'}"></div><span style="font-size:9px;color:var(--t3)">${p.score}</span></div></td>
+    <td style="opacity:${S.stat&&S.stat!==p.statut?'0.25':'1'};transition:opacity .2s"><span class="pill ${p.statut==='Alerte'?'pr':p.statut==='Surveiller'?'po':'pg'}" style="${S.stat===p.statut?'box-shadow:0 0 0 2px currentColor;':''}">${p.statut==='Alerte'?'Alerte':p.statut==='Surveiller'?'Surveiller':'Normal'}</span></td>
+  </tr>`).join('');
+  const tf=document.getElementById('ptfoot');
+  if(tf&&rows.length){const tp=rows.reduce((s,p)=>s+p.pc,0),ta=rows.reduce((s,p)=>s+p.ac,0);tf.innerHTML=`<tr><td colspan="4">TOTAL (${rows.length})</td><td>${fm(tp)}E</td><td>${fm(ta)}E</td><td colspan="3" style="color:#D97706">${fp((ta-tp)/tp*100)} moy.</td><td>${rows.filter(p=>p.retard>0).length} ret.</td><td colspan="2">${rows.filter(p=>p.statut==='Alerte').length} alertes</td></tr>`;}
+  document.querySelectorAll('#ptbl th').forEach(th=>{th.classList.remove('asc','desc');if(th.getAttribute('onclick')?.includes("'"+sCol+"'"))th.classList.add(sDir===1?'asc':'desc');});
+}
+function srt(col){if(sCol===col)sDir*=-1;else{sCol=col;sDir=1;}renderTable();}
+
+function r3(d){
+  const nR=d.filter(p=>p.retard>0).length,nAv=d.filter(p=>p.retard<0).length,tot=d.length||1;
+  const gs=document.getElementById('g-stat');
+  if(gs)gs.innerHTML=`<div class="br"><div class="bl">En retard</div><div class="bt"><div class="bf" style="width:${Math.round(nR/tot*100)}%;background:#DC2626"><span>${nR}</span></div></div></div><div class="br"><div class="bl">En avance</div><div class="bt"><div class="bf" style="width:${Math.round(nAv/tot*100)}%;background:#16A34A"><span>${nAv}</span></div></div></div><div class="br"><div class="bl">A l heure</div><div class="bt"><div class="bf" style="width:${Math.round((tot-nR-nAv)/tot*100)}%;background:#1D4ED8"><span>${tot-nR-nAv}</span></div></div></div>`;
+  const REGS=['Europe C/E','Europe Occ.','APAC','Ameriques'],RC=['#DC2626','#D97706','#0891B2','#16A34A'];
+  const ra=REGS.map((r,i)=>{const rp=d.filter(p=>p.region===r&&p.retard>0);return rp.length?{r,avg:Math.round(rp.reduce((s,p)=>s+p.retard,0)/rp.length),col:RC[i]}:null;}).filter(Boolean);
+  const mx=Math.max(...ra.map(s=>s.avg),1);
+  const gr=document.getElementById('g-reg');
+  if(gr)gr.innerHTML=ra.map(s=>`<div class="br"><div class="bl">${s.r}</div><div class="bt"><div class="bf" style="width:${Math.round(s.avg/mx*100)}%;background:${s.col}"><span>+${s.avg}j</span></div></div></div>`).join('');
+  const top=[...d].sort((a,b)=>b.retard-a.retard).slice(0,15);
+  const GC={done:'#6B7280',ok:'#16A34A',risk:'#D97706',late:'#DC2626'},GL={done:'Avance',ok:'Normal',risk:'A risque',late:'Retard'};
+  const gr2=document.getElementById('g-rows');
+  if(gr2)gr2.innerHTML=top.map((p,i)=>{
+    const t=p.retard<0?'done':p.retard<30?'ok':p.retard<60?'risk':'late';
+    const pr=t==='done'?100:t==='ok'?85:t==='risk'?55:35;
+    const st=((i*0.6)%10)/12*100,dur=Math.min(100-st,35+((p.id*7)%25)),pw=pr/100*dur;
+    return `<div class="grow"><div class="gname">P${p.id} ${p.type==='Marketing'?'Mktg':'IT'}</div><div class="gtrack"><div class="gbg" style="left:${st.toFixed(1)}%;width:${dur.toFixed(1)}%"></div><div class="gfill" style="left:${st.toFixed(1)}%;width:${pw.toFixed(1)}%;background:${GC[t]}">${pr}%</div></div><div class="gstat"><span class="pill" style="background:${GC[t]}22;color:${GC[t]}">${GL[t]}</span></div></div>`;
+  }).join('');
+}
+
+function r4(d){
+  const opEC=S.ind==='all'||S.ind==='ec'?'1':'.25';
+  const opED=S.ind==='all'||S.ind==='ed'?'1':'.25';
+  const opEDL=S.ind==='all'||S.ind==='edl'?'1':'.25';
+  const tb=document.getElementById('ph-tbody');
+  if(tb)tb.innerHTML=PH.map(ph=>{
+    const ma=Math.max(Math.abs(ph.ec),Math.abs(ph.ed),Math.abs(ph.edl));
+    return`<tr><td style="font-weight:500">${ph.name.replace('Phase ','Ph.')}</td><td style="opacity:${opEC}"><span class="pill ${pc(ph.ec)}">${fp(ph.ec)}</span></td><td style="opacity:${opED}"><span class="pill ${pc(ph.ed)}">${fp(ph.ed)}</span></td><td style="opacity:${opEDL}"><span class="pill ${pc(ph.edl)}">${fp(ph.edl)}</span></td><td style="font-weight:600;color:var(--t2)">${ph.score}</td><td><span class="pill ${ma>=15?'pr':ma>=7?'po':'pg'}">${ma>=15?'Critique':ma>=7?'Modere':'Faible'}</span></td></tr>`;
+  }).join('');
+  renderB3(document.getElementById('ph-b3'),PH.map(p=>({...p,label:p.name.replace('Phase ','')})));
+  const ws=[...PH].sort((a,b)=>b.score-a.score),mx2=ws[0]?.score||1;
+  const pr=document.getElementById('ph-risk');
+  if(pr)pr.innerHTML=ws.map(ph=>{const c=ph.score>100?'#DC2626':ph.score>40?'#D97706':'#92400E';return`<div class="br"><div class="bl">${ph.name.replace('Phase ','Ph.')}</div><div class="bt"><div class="bf" style="width:${Math.round(ph.score/mx2*100)}%;background:${c}"><span>${ph.score}</span></div></div><div class="bv" style="color:${c}">${ph.score}</div></div>`;}).join('');
+  const mk=d.filter(p=>p.type==='Marketing'),it=d.filter(p=>p.type==='IT-CRM');
+  const avg2=(a,k)=>a.length>0?a.reduce((s,p)=>s+p[k],0)/a.length:0;
+  renderB3(document.getElementById('tc-b3'),[
+    {label:'Marketing ('+mk.length+')',ec:avg2(mk,'ec'),ed:avg2(mk,'ed'),edl:avg2(mk,'edl')},
+    {label:'IT-CRM ('+it.length+')',ec:avg2(it,'ec'),ed:avg2(it,'ed'),edl:avg2(it,'edl')}
+  ]);
+}
+
+let chartRegInst = null;
+
+function renderChartReg(items){
+  const canvas = document.getElementById('chart-reg');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const keys = S.ind === 'all' ? ['ec','ed','edl'] : [S.ind];
+  const colMap = {ec: getComputedStyle(document.documentElement).getPropertyValue('--ec').trim(),
+                  ed: getComputedStyle(document.documentElement).getPropertyValue('--ed').trim(),
+                  edl: getComputedStyle(document.documentElement).getPropertyValue('--edl').trim()};
+  const lblMap = {ec:'Couts', ed:'Delais', edl:'Livrables'};
+
+  const labels = items.map(i => i.label.replace('Europe ','Eur. '));
+  const datasets = keys.map(k => ({
+    label: lblMap[k],
+    data: items.map(i => parseFloat((i[k]||0).toFixed(1))),
+    backgroundColor: colMap[k] || '#888',
+    borderRadius: 5,
+    borderSkipped: false,
+    barPercentage: 0.7,
+    categoryPercentage: keys.length === 1 ? 0.4 : 0.75,
+  }));
+
+  if(chartRegInst){ chartRegInst.destroy(); chartRegInst = null; }
+  chartRegInst = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15,40,25,.92)',
+          titleColor: '#fff',
+          bodyColor: 'rgba(255,255,255,.75)',
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ' : ' + (ctx.parsed.y > 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#5A7A68', font: { size: 10, family: 'Inter' } },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,.06)', lineWidth: 1 },
+          ticks: {
+            color: '#5A7A68',
+            font: { size: 9, family: 'Inter' },
+            callback: v => (v > 0 ? '+' : '') + v + '%'
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function renderAll(){const d=flt();r1(d);renderTable();r3([...d]);r4(d);updateFocus();}
+
+function fi(key,el){
+  const v=el.dataset.v;
+  if(key==='ind')S.ind=v;
+  else if(key==='reg')S.reg=v;
+  else if(key==='type')S.type=v;
+  else S.stat=v;
+  document.getElementById({'ind':'fg-ind','reg':'fg-reg','type':'fg-type','stat':'fg-stat'}[key]).querySelectorAll('.fb').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  renderAll();
+}
+
+const PAGES=['p1','p2','p3','p4','p5'];
+function nav(id,el){PAGES.forEach(p=>document.getElementById(p).classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));el.classList.add('on');}
+
+renderAll();
+</script>
+</body>
+</html>
